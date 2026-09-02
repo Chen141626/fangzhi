@@ -1,0 +1,146 @@
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: vs:vert
+      frag: fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendSrcAlpha: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        startColor: { value: [0.9, 0.6, 0.3, 1.0], editor: {type: 'color'} }
+        endColor: { value: [0.9, 0.6, 0.3, 1.0], editor: {type: 'color'} }
+        colors: {value: [
+          [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0],
+          [0.0, 0.0, 0.0, 0.0]], 
+          editor: {type: 'color'} }
+        direction: {value: 0.0} # 0: 横向渐变, 1: 纵向渐变
+        isMultiple: {value: 0.0}
+        
+}%
+
+CCProgram vs %{
+  precision highp float;
+  #include <cc-global>
+
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  out vec2 v_texCoord;
+
+  vec4 vert() {
+    vec4 pos = cc_matViewProj * a_position;
+    v_texCoord = a_texCoord;
+    return pos;
+  }
+}%
+
+CCProgram fs %{
+  precision highp float;
+
+  in vec2 v_texCoord;
+  #pragma builtin(local)
+  layout(set = 2, binding = 10) uniform sampler2D cc_spriteTexture;
+
+  // 获取属性面板中设置的值
+  uniform Constant {
+    vec4 startColor;
+    vec4 endColor;
+    vec4 colors[4];
+    float direction;
+    float isMultiple;
+  };
+
+  int getActiveColorCount() {
+    for (int i = 0; i < 4; i++) {
+      if (colors[i].a == 0.0) {
+        return i;
+      }
+    }
+    return 4;
+
+  }
+
+  vec4 multiColorGradient(float t, int colorCount) {
+    if (colorCount <= 1) {
+      return colors[0];
+    }
+    
+    // 将t映射到颜色区间
+    float scaledT = t * float(colorCount - 1);
+    int index = int(floor(scaledT));
+    float fraction = fract(scaledT);
+    
+    // 限制索引范围
+    index = int(clamp(float(index), 0.0, float(colorCount - 2)));
+    
+
+    vec4 color1, color2;
+    
+    if (colorCount == 2) {
+      color1 = colors[0];
+      color2 = colors[1];
+    } else if (colorCount == 3) {
+      if (index == 0) {
+        color1 = colors[0];
+        color2 = colors[1];
+      } else {
+        color1 = colors[1];
+        color2 = colors[2];
+      }
+    } else { // colorCount == 4
+      if (index == 0) {
+        color1 = colors[0];
+        color2 = colors[1];
+      } else if (index == 1) {
+        color1 = colors[1];
+        color2 = colors[2];
+      } else {
+        color1 = colors[2];
+        color2 = colors[3];
+      }
+    }
+    
+    return mix(color1, color2, fraction);
+  }
+
+  vec4 frag() {
+    // 获取原纹理像素颜色
+    vec4 o =  vec4(1, 1, 1, 1);
+    o *= texture(cc_spriteTexture, v_texCoord);
+      if(direction == 0.0){
+        if(isMultiple == 1.0){
+          int activeColors = getActiveColorCount();
+          if (activeColors > 0) {
+            vec4 gradientColor = multiColorGradient(v_texCoord.x, activeColors);
+            o.rgba *= gradientColor.rgba;
+          }
+        }else{
+          o.rgba *= mix(startColor,endColor,v_texCoord.x).rgba;
+        }
+        
+      }else{
+        if(isMultiple == 1.0){
+          int activeColors = getActiveColorCount();
+          if (activeColors > 0) {
+            vec4 gradientColor = multiColorGradient(v_texCoord.y, activeColors);
+            o.rgba *= gradientColor.rgba;
+          }
+        }else{
+          o.rgba *= mix(startColor,endColor,v_texCoord.y).rgba;
+        }
+      }
+    
+    return o;
+  }
+}%

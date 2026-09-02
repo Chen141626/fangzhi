@@ -1,0 +1,356 @@
+{
+  "schema": "q_xianxia_status_icons_v2",
+  "size": [
+    100,
+    100
+  ],
+  "format": "RGBA",
+  "color_rule": {
+    "buff": "blue-cyan and gold",
+    "debuff": "crimson, black and tarnished gold"
+  },
+  "count": {
+    "buff": 12,
+    "debuff": 12,
+    "total": 24
+  },
+  "overview": "status_icons_overview.png",
+  "icons": [
+    {
+      "id": "buff_attack_up",
+      "name": "攻击提升",
+      "category": "buff",
+      "file": "buff/buff_attack_up.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-1b295afb-e79d-4caa-9487-385cc580d47a.png",
+      "source_slot": 1
+    },
+    {
+      "id": "buff_attack_speed_up",
+      "name": "攻速提升",
+      "category": "buff",
+      "file": "buff/buff_attack_speed_up.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-1b295afb-e79d-4caa-9487-385cc580d47a.png",
+      "source_slot": 2
+    },
+    {
+      "id": "buff_defense_up",
+      "name": "防御提升",
+      "category": "buff",
+      "file": "buff/buff_defense_up.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-1b295afb-e79d-4caa-9487-385cc580d47a.png",
+      "source_slot": 3
+    },
+    {
+      "id": "buff_shield",
+      "name": "护盾",
+      "category": "buff",
+      "file": "buff/buff_shield.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-1b295afb-e79d-4caa-9487-385cc580d47a.png",
+      "source_slot": 4
+    },
+    {
+      "id": "buff_invincible",
+      "name": "无敌",
+      "category": "buff",
+      "file": "buff/buff_invincible.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-bacfa325-adfd-4159-9e57-9add6d0d3de5.png",
+      "source_slot": 1
+    },
+    {
+      "id": "buff_critical_up",
+      "name": "暴击提升",
+      "category": "buff",
+      "file": "buff/buff_critical_up.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-bacfa325-adfd-4159-9e57-9add6d0d3de5.png",
+      "source_slot": 2
+    },
+    {
+      "id": "buff_haste",
+      "name": "迅捷",
+      "category": "buff",
+      "file": "buff/buff_haste.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-bacfa325-adfd-4159-9e57-9add6d0d3de5.png",
+      "source_slot": 3
+    },
+    {
+      "id": "buff_regeneration",
+      "name": "持续恢复",
+      "category": "buff",
+      "file": "buff/buff_regeneration.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-bacfa325-adfd-4159-9e57-9add6d0d3de5.png",
+      "source_slot": 4
+    },
+    {
+      "id": "buff_lifesteal",
+      "name": "吸血",
+      "category": "buff",
+      "file": "buff/buff_lifesteal.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-43ed4c43-ce64-4616-89ef-f411cb86f106.png",
+      "source_slot": 1
+    },
+    {
+      "id": "buff_control_immunity",
+      "name": "控制免疫",
+      "category": "buff",
+      "file": "buff/buff_control_immunity.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-43ed4c43-ce64-4616-89ef-f411cb86f106.png",
+      "source_slot": 2
+    },
+    {
+      "id": "buff_counter",
+      "name": "反击",
+      "category": "buff",
+      "file": "buff/buff_counter.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-43ed4c43-ce64-4616-89ef-f411cb86f106.png",
+      "source_slot": 3
+    },
+    {
+      "id": "buff_tenacity",
+      "name": "坚韧",
+      "category": "buff",
+      "file": "buff/buff_tenacity.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-43ed4c43-ce64-4616-89ef-f411cb86f106.png",
+      "source_slot": 4
+    },
+    {
+      "id": "debuff_attack_down",
+      "name": "攻击降低",
+      "category": "debuff",
+      "file": "debuff/debuff_attack_down.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-f6ba9280-3967-4886-8d31-86c03215d0ca.png",
+      "source_slot": 1
+    },
+    {
+      "id": "debuff_defense_down",
+      "name": "防御降低",
+      "category": "debuff",
+      "file": "debuff/debuff_defense_down.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-f6ba9280-3967-4886-8d31-86c03215d0ca.png",
+      "source_slot": 2
+    },
+    {
+      "id": "debuff_slow",
+      "name": "减速",
+      "category": "debuff",
+      "file": "debuff/debuff_slow.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-f6ba9280-3967-4886-8d31-86c03215d0ca.png",
+      "source_slot": 3
+    },
+    {
+      "id": "debuff_stun",
+      "name": "眩晕",
+      "category": "debuff",
+      "file": "debuff/debuff_stun.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-f6ba9280-3967-4886-8d31-86c03215d0ca.png",
+      "source_slot": 4
+    },
+    {
+      "id": "debuff_freeze",
+      "name": "冰冻",
+      "category": "debuff",
+      "file": "debuff/debuff_freeze.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-b5d6962e-455c-4f27-ab41-5037a671bdb5.png",
+      "source_slot": 1
+    },
+    {
+      "id": "debuff_sleep",
+      "name": "催眠",
+      "category": "debuff",
+      "file": "debuff/debuff_sleep.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-b5d6962e-455c-4f27-ab41-5037a671bdb5.png",
+      "source_slot": 2
+    },
+    {
+      "id": "debuff_poison",
+      "name": "中毒",
+      "category": "debuff",
+      "file": "debuff/debuff_poison.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-b5d6962e-455c-4f27-ab41-5037a671bdb5.png",
+      "source_slot": 3
+    },
+    {
+      "id": "debuff_burn",
+      "name": "灼烧",
+      "category": "debuff",
+      "file": "debuff/debuff_burn.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-b5d6962e-455c-4f27-ab41-5037a671bdb5.png",
+      "source_slot": 4
+    },
+    {
+      "id": "debuff_bleed",
+      "name": "流血",
+      "category": "debuff",
+      "file": "debuff/debuff_bleed.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-7497d4db-8651-416a-a853-93192661bd0b.png",
+      "source_slot": 1
+    },
+    {
+      "id": "debuff_silence",
+      "name": "沉默",
+      "category": "debuff",
+      "file": "debuff/debuff_silence.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-7497d4db-8651-416a-a853-93192661bd0b.png",
+      "source_slot": 2
+    },
+    {
+      "id": "debuff_blind",
+      "name": "致盲",
+      "category": "debuff",
+      "file": "debuff/debuff_blind.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-7497d4db-8651-416a-a853-93192661bd0b.png",
+      "source_slot": 3
+    },
+    {
+      "id": "debuff_damage_over_time",
+      "name": "持续伤害",
+      "category": "debuff",
+      "file": "debuff/debuff_damage_over_time.png",
+      "size": [
+        100,
+        100
+      ],
+      "format": "RGBA",
+      "visual_style": "Q版修仙微缩法术插画",
+      "source_sheet": "exec-7497d4db-8651-416a-a853-93192661bd0b.png",
+      "source_slot": 4
+    }
+  ]
+}

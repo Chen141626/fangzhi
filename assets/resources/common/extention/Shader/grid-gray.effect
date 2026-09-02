@@ -1,0 +1,225 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        alphaThreshold: { value: 0.5 }
+        gridSpacing: { value: 0.02, editor: { type: slider, min: 0, max: 0.1, step: 0.001 } }
+        gridData0: { value: [1,1,1,1] }
+        gridData1: { value: [1,1,1,1] }
+        gridData2: { value: [1,1,1,1] }
+        gridData3: { value: [1,1,1,1] }
+        gridData4: { value: [1,1,1,1] }
+        gridData5: { value: [1,1,1,1] }
+        gridData6: { value: [1,1,1,1] }
+        gridData7: { value: [1,1,1,1] }
+        gridData8: { value: [1,1,1,1] }
+        gridData9: { value: [1,1,1,1] }
+        gridData10: { value: [1,1,1,1] }
+        gridData11: { value: [1,1,1,1] }
+        gridData12: { value: [1,1,1,1] }
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+
+  in vec4 color;
+
+  #if USE_TEXTURE
+    in vec2 uv0;
+    #pragma builtin(local)
+    layout(set = 2, binding = 12) uniform sampler2D cc_spriteTexture;
+  #endif
+
+  // 将vec4 uniform变量放入uniform块中
+  uniform GridDataBlock {
+    vec4 gridData0;
+    vec4 gridData1;
+    vec4 gridData2;
+    vec4 gridData3;
+    vec4 gridData4;
+    vec4 gridData5;
+    vec4 gridData6;
+    vec4 gridData7;
+    vec4 gridData8;
+    vec4 gridData9;
+    vec4 gridData10;
+    vec4 gridData11;
+    vec4 gridData12;
+    float gridSpacing;
+  };
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    #if USE_TEXTURE
+        o *= CCSampleWithAlphaSeparated(cc_spriteTexture, uv0);
+      
+          // 计算7x7格子的索引
+        float cellWidth = 1.0 / 7.0;
+        float effectiveCellWidth = cellWidth * (1.0 - gridSpacing);
+        float spacingOffset = cellWidth * gridSpacing * 0.5;
+
+        // 计算当前像素所在的格子索引
+        int gridX = int(uv0.x / cellWidth);
+        int gridY = int(uv0.y / cellWidth);
+        int gridIndex = gridY * 7 + gridX;
+
+        // 检查是否在格子间距区域内
+        float localX = fract(uv0.x / cellWidth);
+        float localY = fract(uv0.y / cellWidth);
+        
+        bool inSpacingArea = localX < gridSpacing * 0.5 || 
+                            localX > 1.0 - gridSpacing * 0.5 ||
+                            localY < gridSpacing * 0.5 || 
+                            localY > 1.0 - gridSpacing * 0.5;
+
+        if (inSpacingArea) {
+            // 将原始颜色与白色混合，使颜色稍微发白
+            vec3 whitenedColor = mix(o.rgb, vec3(1.0, 1.0, 1.0), 0.3);
+            return vec4(whitenedColor, 1.0);
+        }
+
+        // 获取当前格子的灰度状态
+        int dataIndex = gridIndex / 4;
+        int componentIndex = gridIndex - 4 * (gridIndex / 4);
+        float grayState;
+        
+        // 使用条件语句访问对应的gridData
+        if (dataIndex == 0) {
+            if (componentIndex == 0) grayState = gridData0.x;
+            else if (componentIndex == 1) grayState = gridData0.y;
+            else if (componentIndex == 2) grayState = gridData0.z;
+            else grayState = gridData0.w;
+        } else if (dataIndex == 1) {
+            if (componentIndex == 0) grayState = gridData1.x;
+            else if (componentIndex == 1) grayState = gridData1.y;
+            else if (componentIndex == 2) grayState = gridData1.z;
+            else grayState = gridData1.w;
+        } else if (dataIndex == 2) {
+            if (componentIndex == 0) grayState = gridData2.x;
+            else if (componentIndex == 1) grayState = gridData2.y;
+            else if (componentIndex == 2) grayState = gridData2.z;
+            else grayState = gridData2.w;
+        } else if (dataIndex == 3) {
+            if (componentIndex == 0) grayState = gridData3.x;
+            else if (componentIndex == 1) grayState = gridData3.y;
+            else if (componentIndex == 2) grayState = gridData3.z;
+            else grayState = gridData3.w;
+        } else if (dataIndex == 4) {
+            if (componentIndex == 0) grayState = gridData4.x;
+            else if (componentIndex == 1) grayState = gridData4.y;
+            else if (componentIndex == 2) grayState = gridData4.z;
+            else grayState = gridData4.w;
+        } else if (dataIndex == 5) {
+            if (componentIndex == 0) grayState = gridData5.x;
+            else if (componentIndex == 1) grayState = gridData5.y;
+            else if (componentIndex == 2) grayState = gridData5.z;
+            else grayState = gridData5.w;
+        } else if (dataIndex == 6) {
+            if (componentIndex == 0) grayState = gridData6.x;
+            else if (componentIndex == 1) grayState = gridData6.y;
+            else if (componentIndex == 2) grayState = gridData6.z;
+            else grayState = gridData6.w;
+        } else if (dataIndex == 7) {
+            if (componentIndex == 0) grayState = gridData7.x;
+            else if (componentIndex == 1) grayState = gridData7.y;
+            else if (componentIndex == 2) grayState = gridData7.z;
+            else grayState = gridData7.w;
+        } else if (dataIndex == 8) {
+            if (componentIndex == 0) grayState = gridData8.x;
+            else if (componentIndex == 1) grayState = gridData8.y;
+            else if (componentIndex == 2) grayState = gridData8.z;
+            else grayState = gridData8.w;
+        } else if (dataIndex == 9) {
+            if (componentIndex == 0) grayState = gridData9.x;
+            else if (componentIndex == 1) grayState = gridData9.y;
+            else if (componentIndex == 2) grayState = gridData9.z;
+            else grayState = gridData9.w;
+        } else if (dataIndex == 10) {
+            if (componentIndex == 0) grayState = gridData10.x;
+            else if (componentIndex == 1) grayState = gridData10.y;
+            else if (componentIndex == 2) grayState = gridData10.z;
+            else grayState = gridData10.w;
+        } else if (dataIndex == 11) {
+            if (componentIndex == 0) grayState = gridData11.x;
+            else if (componentIndex == 1) grayState = gridData11.y;
+            else if (componentIndex == 2) grayState = gridData11.z;
+            else grayState = gridData11.w;
+        } else if (dataIndex == 12) {
+            if (componentIndex == 0) grayState = gridData12.x;
+            else if (componentIndex == 1) grayState = gridData12.y;
+            else if (componentIndex == 2) grayState = gridData12.z;
+            else grayState = gridData12.w;
+        } else {
+            grayState = 1.0; // 默认正常显示
+        }
+
+        if (grayState < 0.5) {
+            // 置灰处理：使用灰度公式
+            float gray = dot(o.rgb, vec3(0.299, 0.587, 0.114));
+            o.rgb = vec3(gray, gray, gray);
+        }
+    #endif
+
+    o *= color;
+    ALPHA_TEST(o);
+    return o;
+  }
+}%

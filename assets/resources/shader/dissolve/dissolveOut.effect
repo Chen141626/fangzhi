@@ -1,0 +1,82 @@
+CCEffect %{
+  techniques:
+  - name: opaque
+    passes:
+    - vert: vs:vert
+      frag: fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendSrcAlpha: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:
+        noiseTexture: { value: white }                                            # 噪声图
+        dissolveColor: { value: [0.9, 0.6, 0.3, 1.0], editor: {type: 'color'} }   # 消融颜色
+        dissolveDegree: { value: 0.5, editor: {range:[0, 1, 0.01], slide: true}}  # 消融程度
+}%
+
+CCProgram vs %{
+  precision highp float;
+  #include <cc-global>
+
+  in vec4 a_position;
+  in vec2 a_texCoord;
+  out vec2 v_texCoord;
+
+  vec4 vert() {
+    vec4 pos = cc_matViewProj * a_position;
+    v_texCoord = a_texCoord;
+    return pos;
+  }
+}%
+
+CCProgram fs %{
+  precision highp float;
+
+  in vec2 v_texCoord;
+  #pragma builtin(local)
+  layout(set = 2, binding = 10) uniform sampler2D cc_spriteTexture;
+
+  // 噪声纹理图
+  uniform sampler2D noiseTexture;
+
+  // 获取属性面板中设置的值
+  uniform Constant {
+    vec4 dissolveColor;
+    float dissolveDegree;
+  };
+
+  vec4 frag() {
+    // 获取原纹理像素颜色
+    vec4 o =  vec4(1, 1, 1, 1);
+    o *= texture(cc_spriteTexture, v_texCoord);
+
+    // 获取噪声纹理像素颜色，并将该像素颜色中的r值和消融程度值进行比较
+    vec4 noiseColor = texture(noiseTexture, v_texCoord);
+    float value = 1.0*noiseColor.r;
+
+    // 如果小于消融程度值的话，直接舍弃该像素
+    if (value < dissolveDegree) {
+      // float gray = (o.r + o.g + o.b) / 3.0;
+      // o = o + (vec4(gray, gray, gray, o.a)-o);// * grayDegree;
+      discard;
+    }
+
+    // 如果在dissolveDegree和dissolveDegree+0.01区间范围，则将原纹理中的像素颜色改成消融颜色
+    if (value < dissolveDegree + 0.05) {
+      o.rgb = dissolveColor.rgb;
+    }
+    if(o.rgb != dissolveColor.rgb){
+      o.a = 0.0;
+      discard;
+    }
+    return o;
+  }
+}%

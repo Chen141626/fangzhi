@@ -1,0 +1,120 @@
+
+
+// 着色器语法  ： https://docs.cocos.com/creator/3.5/manual/zh/shader/effect-syntax.html
+// Shader =  CCEffect = [pass , pass , ...]
+// pass = vert(必须) + frag(必须) + ...(可选)
+// **** 为了方便展示 , 所以使用blendState(可选) ****
+CCEffect %{
+  techniques:
+
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      properties: 
+        distance:    { value: 0.05 }
+        rate:    { value: 0.3 }
+        u_time: { value: 0 }
+        wide: { value: 0 }
+        light: { value: 0 }
+        grayscale: { value: 0 }
+        useY: { value: 0 }
+        sustain: { value: 1.0 }
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+          
+}%
+
+
+// *************
+// * 顶点着色器 *
+// *************
+CCProgram sprite-vs %{
+  precision highp float;
+  // Cocos Effect 内置 Uniform
+  // 可参考 : https://docs.cocos.com/creator/3.5/manual/zh/shader/uniform.html
+  #include <builtin/uniforms/cc-global>
+
+  // 图形顶点坐标
+  in vec3 a_position;
+  // 图形纹理坐标
+  in vec2 a_texCoord;
+  // 图形坐标颜色值
+  in vec4 a_color;
+  // ****************************** 
+  // 传递给片段着色器 
+  // ****************************** 
+  out vec4 color;
+  // 图形纹理坐标
+  out vec2 uv0;
+  // 这里的函数命名要对应 passes 下vert 变量的值 字符串
+  vec4 vert() 
+  {
+
+    // 使用 ”视图投影矩阵 “, 需导入 cc-global 
+    // 这里代表 ： 视图坐标  转换成 投影坐标
+    vec4 pos = cc_matViewProj * vec4(a_position, 1);
+
+    // 这里只是中转一下变量到片段着色器
+    uv0 = a_texCoord;
+    color = a_color;
+
+    // 将摄像机坐标转换成投影坐标
+    return pos;
+  }
+}%
+
+// *************
+// * 片段着色器 *
+// *************
+CCProgram sprite-fs %{
+
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+
+
+  // 使用in ，获取顶点着色器的uv0变量
+  in vec2 uv0;
+  // 
+  uniform Constant {
+    float distance;
+    float rate;
+    float u_time;
+    float wide;
+    float light;
+    float grayscale;
+    float useY;
+    float sustain;
+  };
+  // 使用 pragma 宏预定义该值从组件中取
+  #pragma builtin(local)
+  uniform sampler2D cc_spriteTexture;
+
+  // 这里的函数命名要对应 passes 下frag 变量的值 字符串
+  vec4 frag() 
+  {
+    vec4 o = vec4(1, 1, 1, 1);
+    o = texture(cc_spriteTexture, uv0);
+    
+    if(grayscale==1.0){
+        float gray = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+        return vec4(gray, gray, gray, o.a);
+    }else if(sustain==1.0){
+      //扫光
+      float y = useY==1.0?uv0.y:0.0;
+      if(uv0.x+y >= u_time&&uv0.x+y <= u_time+wide){
+        o *=1.5*light;
+      }
+    }
+    
+
+    return o;
+  }
+
+}%

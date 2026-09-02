@@ -1,0 +1,151 @@
+// Copyright (c) 2017-2020 Xiamen Yaji Software Co., Ltd.
+CCEffect %{
+  techniques:
+  - passes:
+    - vert: sprite-vs:vert
+      frag: sprite-fs:frag
+      depthStencilState:
+        depthTest: false
+        depthWrite: false
+      blendState:
+        targets:
+        - blend: true
+          blendSrc: src_alpha
+          blendDst: one_minus_src_alpha
+          blendDstAlpha: one_minus_src_alpha
+      rasterizerState:
+        cullMode: none
+      properties:       
+        rounded: { editor: {tooltip: "圆角大小"} ,value: 10 }
+        roundedType: { editor: {tooltip: "对应四个象限的圆角", type: vec4 },value: [1,1,1,1]}
+        height:  { value: 200}
+        width:   { value: 200}
+        alphaThreshold: { value: 0.5 }
+        smoothstep_f: { value: 0.01 }
+        smoothstep_color_v4:  { editor: { type: color }}
+}%
+
+CCProgram sprite-vs %{
+  precision highp float;
+  #include <builtin/uniforms/cc-global>
+  #if USE_LOCAL
+    #include <builtin/uniforms/cc-local>
+  #endif
+  #if SAMPLE_FROM_RT
+    #include <common/common-define>
+  #endif 
+  in vec3 a_position;
+  in vec2 a_texCoord;
+  in vec4 a_color;
+
+  out vec4 color;
+  out vec2 uv0;
+  out vec4 uvRect; // 传递UV矩形信息，用于动态合图支持
+  
+  #if USE_TEXTURE && USE_TEXTURE_RECT
+  uniform CCGlobalUniforms {
+    vec4 cc_texRectInfo; // [x, y, w, h]
+  };
+  #endif
+
+  vec4 vert () {
+    vec4 pos = vec4(a_position, 1);
+
+    #if USE_LOCAL
+      pos = cc_matWorld * pos;
+    #endif
+
+    #if USE_PIXEL_ALIGNMENT
+      pos = cc_matView * pos;
+      pos.xyz = floor(pos.xyz);
+      pos = cc_matProj * pos;
+    #else
+      pos = cc_matViewProj * pos;
+    #endif
+
+    uv0 = a_texCoord;
+    #if SAMPLE_FROM_RT
+      CC_HANDLE_RT_SAMPLE_FLIP(uv0);
+    #endif
+    color = a_color;
+
+    // 传递UV矩形信息（左下角和宽高）
+    #if USE_TEXTURE && USE_TEXTURE_RECT
+      uvRect = vec4(cc_texRectInfo.xy, cc_texRectInfo.zw);
+    #else
+      uvRect = vec4(0.0, 0.0, 1.0, 1.0);
+    #endif
+
+    return pos;
+  }
+}%
+
+CCProgram sprite-fs %{
+  precision highp float;
+  #include <builtin/internal/embedded-alpha>
+  #include <builtin/internal/alpha-test>
+  #include <legacy/output>
+
+  in vec4 color;
+  in vec2 uv0;
+  in vec4 uvRect; // 接收UV矩形信息
+
+  // 传递的属性
+  uniform Float {
+    vec4 smoothstep_color_v4;
+    vec4 roundedType;
+    float rounded;
+    float smoothstep_f;
+    float height;
+    float width;
+  };
+  
+  #if USE_TEXTURE 
+    #pragma builtin(local)
+    layout(set = 2, binding = 11) uniform sampler2D cc_spriteTexture;
+    #if USE_TEXTURE_RECT
+      layout(set = 0, binding = 1) uniform CCGlobalUniforms {
+        vec4 cc_texRectInfo; // [x, y, w, h]
+      };
+    #endif
+  #endif
+
+  float myRoundBoxSDF(in vec2 p, in vec2 a, in vec4 r)
+  {
+      r.xy = (p.x>0.0)?r.xy : r.zw;
+      r.x  = (p.y>0.0)?r.x  : r.y;
+      vec2 q = abs(p)-a + r.x;
+      return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r.x;
+  }
+
+  vec4 frag () {
+    vec4 o = vec4(1, 1, 1, 1);
+
+    // 计算实际的UV坐标（考虑动态合图）
+    vec2 actualUV = uvRect.xy + uv0 * uvRect.zw;
+
+    #if USE_TEXTURE
+      o *= CCSampleWithAlphaSeparated(cc_spriteTexture, actualUV); 
+      #if IS_GRAY
+        float gray  = 0.2126 * o.r + 0.7152 * o.g + 0.0722 * o.b;
+        o.r = o.g = o.b = gray;
+      #endif
+    #endif
+      vec4 realRoundType = vec4(roundedType.w,roundedType.y,roundedType.z,roundedType.x);
+
+      float w_ratio_f = width / height;
+      float rounded_f = (rounded * 2.0)/min(width,height);
+      vec4 color2 = color;
+
+      // 使用实际的UV坐标进行计算
+      vec2 render_v2 = (actualUV - vec2(0.5)) * 2.0* vec2(w_ratio_f, 1.0);
+      float dist_f = myRoundBoxSDF(render_v2, vec2(w_ratio_f,1.0),rounded_f * realRoundType);
+
+      color2.a *= smoothstep(smoothstep_f, -smoothstep_f, dist_f);
+
+    o *= color2;
+    ALPHA_TEST(o);
+    
+    return o;
+  }
+}%

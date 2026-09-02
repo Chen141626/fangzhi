@@ -1,0 +1,1699 @@
+{
+  "schema": "q_xianxia_skill_icons_v2",
+  "style": "hand-painted Q-version Chinese xianxia miniature skill illustrations",
+  "icon_spec": {
+    "width": 100,
+    "height": 100,
+    "mode": "RGBA",
+    "frame": "antique-gold and jade"
+  },
+  "counts": {
+    "units": 35,
+    "allies": 18,
+    "enemies": 17,
+    "icons": 140
+  },
+  "overview": "skill_icons_q_xianxia_overview.png",
+  "units": [
+    {
+      "id": "ally_01_crystal_mage",
+      "name": "晶霜法师",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-de67da24-4bd7-455a-8ac8-92421d926f5b.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "晶棱弹",
+          "file": "allies/ally_01_crystal_mage/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "星晶护体",
+          "file": "allies/ally_01_crystal_mage/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "冰晶风暴",
+          "file": "allies/ally_01_crystal_mage/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "晶能共鸣",
+          "file": "allies/ally_01_crystal_mage/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_02_blue_swordsman",
+      "name": "青锋剑客",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-087def7b-f37d-4eeb-8cc9-bb51f22c1736.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "青锋斩",
+          "file": "allies/ally_02_blue_swordsman/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "流云突",
+          "file": "allies/ally_02_blue_swordsman/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "剑气纵横",
+          "file": "allies/ally_02_blue_swordsman/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "剑心通明",
+          "file": "allies/ally_02_blue_swordsman/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_03_jade_healer",
+      "name": "碧玉医仙",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-159a06fb-b6ee-4c46-b94b-159e39ad63cc.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "灵玉针",
+          "file": "allies/ally_03_jade_healer/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "青玉回春",
+          "file": "allies/ally_03_jade_healer/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "莲华净世",
+          "file": "allies/ally_03_jade_healer/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "玉脉生息",
+          "file": "allies/ally_03_jade_healer/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_04_ice_mage",
+      "name": "寒冰术士",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-081dfb83-a804-4dde-af09-7ce665269fcf.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "寒冰箭",
+          "file": "allies/ally_04_ice_mage/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "霜寒之环",
+          "file": "allies/ally_04_ice_mage/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "极寒天幕",
+          "file": "allies/ally_04_ice_mage/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "冰心凝神",
+          "file": "allies/ally_04_ice_mage/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_05_guardian",
+      "name": "金盾守卫",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-5cce1df4-4294-4852-a451-7bcad65047c1.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "镇岳盾击",
+          "file": "allies/ally_05_guardian/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "磐石守护",
+          "file": "allies/ally_05_guardian/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "金钟镇岳",
+          "file": "allies/ally_05_guardian/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "不动如山",
+          "file": "allies/ally_05_guardian/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_06_qingfeng_daotong",
+      "name": "清风道童",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-5f94a8e3-50a9-4561-9e2a-8b1357059deb.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "清风刃",
+          "file": "allies/ally_06_qingfeng_daotong/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "御风诀",
+          "file": "allies/ally_06_qingfeng_daotong/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "清风万象",
+          "file": "allies/ally_06_qingfeng_daotong/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "风灵相随",
+          "file": "allies/ally_06_qingfeng_daotong/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_07_xuanyin_xianzi",
+      "name": "玄阴仙子",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-3c059fbd-0d7e-4475-a663-6b952a389610.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "月华刃",
+          "file": "allies/ally_07_xuanyin_xianzi/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "玄阴缚",
+          "file": "allies/ally_07_xuanyin_xianzi/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "太阴蚀月",
+          "file": "allies/ally_07_xuanyin_xianzi/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "月魄",
+          "file": "allies/ally_07_xuanyin_xianzi/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_08_moyu_zhenren",
+      "name": "墨羽真人",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-ec96bbd7-8984-4243-aa0d-e2d80ba47758.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "墨羽击",
+          "file": "allies/ally_08_moyu_zhenren/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "泼墨封灵",
+          "file": "allies/ally_08_moyu_zhenren/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "万羽归玄",
+          "file": "allies/ally_08_moyu_zhenren/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "墨韵",
+          "file": "allies/ally_08_moyu_zhenren/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_09_lieyan_qiangsheng",
+      "name": "烈焰枪圣",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-79fe1e09-7ab7-4582-9b9c-da81c0950c3c.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "炎枪突",
+          "file": "allies/ally_09_lieyan_qiangsheng/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "火龙横扫",
+          "file": "allies/ally_09_lieyan_qiangsheng/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "烈焰贯日",
+          "file": "allies/ally_09_lieyan_qiangsheng/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "枪魂",
+          "file": "allies/ally_09_lieyan_qiangsheng/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_10_zixiao_xianji",
+      "name": "紫霄仙姬",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-1aa7cf76-1465-46b6-bc59-76a7c6467e69.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "雷音",
+          "file": "allies/ally_10_zixiao_xianji/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "紫霄弦",
+          "file": "allies/ally_10_zixiao_xianji/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "九天雷曲",
+          "file": "allies/ally_10_zixiao_xianji/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "天音感应",
+          "file": "allies/ally_10_zixiao_xianji/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_11_jinjia_tianjiang",
+      "name": "金甲天将",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-2e852d83-9930-4ac4-a43d-8a5b3fde50e3.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "破阵戟",
+          "file": "allies/ally_11_jinjia_tianjiang/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "金甲护体",
+          "file": "allies/ally_11_jinjia_tianjiang/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "天罡镇邪",
+          "file": "allies/ally_11_jinjia_tianjiang/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "神威",
+          "file": "allies/ally_11_jinjia_tianjiang/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_12_hanshuang_xianzi",
+      "name": "寒霜仙子",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-4d8f6f3f-7364-4cc4-be13-7738cdea9d1f.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "寒霜冰华",
+          "file": "allies/ally_12_hanshuang_xianzi/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "霜镜",
+          "file": "allies/ally_12_hanshuang_xianzi/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "寒霜领域",
+          "file": "allies/ally_12_hanshuang_xianzi/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "霜魄",
+          "file": "allies/ally_12_hanshuang_xianzi/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_13_qinglian_yaozun",
+      "name": "青莲药尊",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-ed478814-6045-41c9-aaa8-5ddca0fdbc6c.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "药灵针",
+          "file": "allies/ally_13_qinglian_yaozun/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "青莲回春",
+          "file": "allies/ally_13_qinglian_yaozun/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "百草济世",
+          "file": "allies/ally_13_qinglian_yaozun/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "药灵护佑",
+          "file": "allies/ally_13_qinglian_yaozun/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_14_lingfeng_archer",
+      "name": "灵风弓使",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-ba4e02fa-ff71-4b44-8cbe-7052df58c257.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "风矢",
+          "file": "allies/ally_14_lingfeng_archer/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "追风连射",
+          "file": "allies/ally_14_lingfeng_archer/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "灵风贯日",
+          "file": "allies/ally_14_lingfeng_archer/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "鹰眼",
+          "file": "allies/ally_14_lingfeng_archer/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_15_yeming_assassin",
+      "name": "夜冥刺客",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-0ba8d2d3-9672-4491-bf7a-2c70094679cf.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "影刃",
+          "file": "allies/ally_15_yeming_assassin/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "夜袭",
+          "file": "allies/ally_15_yeming_assassin/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "幽冥绝杀",
+          "file": "allies/ally_15_yeming_assassin/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "隐匿",
+          "file": "allies/ally_15_yeming_assassin/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_16_tianyin_qinshi",
+      "name": "天音琴师",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-5301a6e9-cadb-47dc-9f3d-0922273d263b.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "音刃",
+          "file": "allies/ally_16_tianyin_qinshi/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "清心曲",
+          "file": "allies/ally_16_tianyin_qinshi/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "天音镇魂",
+          "file": "allies/ally_16_tianyin_qinshi/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "余韵",
+          "file": "allies/ally_16_tianyin_qinshi/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_17_xuanji_yanshi",
+      "name": "玄机偃师",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-fd1dfd33-387c-4970-8311-bbbf37a446ff.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "机弩",
+          "file": "allies/ally_17_xuanji_yanshi/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "偃甲召来",
+          "file": "allies/ally_17_xuanji_yanshi/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "千机齐发",
+          "file": "allies/ally_17_xuanji_yanshi/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "机关心",
+          "file": "allies/ally_17_xuanji_yanshi/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "ally_18_chiyan_luohan",
+      "name": "赤岩罗汉",
+      "category": "allies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-336feeb8-52eb-4365-818a-47a9fb890403.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "赤岩拳",
+          "file": "allies/ally_18_chiyan_luohan/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "罗汉金身",
+          "file": "allies/ally_18_chiyan_luohan/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "震地炎环",
+          "file": "allies/ally_18_chiyan_luohan/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "不坏体",
+          "file": "allies/ally_18_chiyan_luohan/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_01_horned_swordsman",
+      "name": "角刃妖兵",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-f5919d0f-9f40-4d89-bac2-f0fe1642e978.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "角刃斩",
+          "file": "enemies/enemy_01_horned_swordsman/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "蛮角突",
+          "file": "enemies/enemy_01_horned_swordsman/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "旋刃",
+          "file": "enemies/enemy_01_horned_swordsman/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "凶性",
+          "file": "enemies/enemy_01_horned_swordsman/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_02_lion_warrior",
+      "name": "狮族战士",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-2893481d-893a-482a-8bb8-e9f56ab0a75e.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "裂爪",
+          "file": "enemies/enemy_02_lion_warrior/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "狮吼",
+          "file": "enemies/enemy_02_lion_warrior/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "猛扑",
+          "file": "enemies/enemy_02_lion_warrior/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "狂怒",
+          "file": "enemies/enemy_02_lion_warrior/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_03_fox_caster",
+      "name": "狐火术士",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-c047ff4a-e01d-4d0c-892e-c1416698e5e1.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "狐火",
+          "file": "enemies/enemy_03_fox_caster/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "魅惑印",
+          "file": "enemies/enemy_03_fox_caster/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "妖焰雨",
+          "file": "enemies/enemy_03_fox_caster/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "狡黠",
+          "file": "enemies/enemy_03_fox_caster/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_04_dark_swordsman",
+      "name": "暗影剑士",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-13902ff0-f9fc-476b-b67d-0b8fe3743600.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "暗斩",
+          "file": "enemies/enemy_04_dark_swordsman/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "影步",
+          "file": "enemies/enemy_04_dark_swordsman/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "黑刃风暴",
+          "file": "enemies/enemy_04_dark_swordsman/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "嗜战",
+          "file": "enemies/enemy_04_dark_swordsman/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_05_red_sorcerer",
+      "name": "赤咒术士",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-bf5776c1-3496-49cf-bfd2-593fb8b5d571.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "咒焰",
+          "file": "enemies/enemy_05_red_sorcerer/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "血印",
+          "file": "enemies/enemy_05_red_sorcerer/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "炼狱火",
+          "file": "enemies/enemy_05_red_sorcerer/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "邪能",
+          "file": "enemies/enemy_05_red_sorcerer/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_06_shadow_wolf",
+      "name": "幽影狼妖",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-96994959-8e58-47b1-90e0-67399df36cfc.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "影牙",
+          "file": "enemies/enemy_06_shadow_wolf/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "暗影扑杀",
+          "file": "enemies/enemy_06_shadow_wolf/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "月夜长啸",
+          "file": "enemies/enemy_06_shadow_wolf/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "猎杀本能",
+          "file": "enemies/enemy_06_shadow_wolf/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_07_stone_guardian",
+      "name": "岩甲灵卫",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-f8a4a0b1-f64d-4983-b6ac-c133c1b51574.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "岩拳",
+          "file": "enemies/enemy_07_stone_guardian/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "石甲",
+          "file": "enemies/enemy_07_stone_guardian/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "裂地震",
+          "file": "enemies/enemy_07_stone_guardian/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "岩躯",
+          "file": "enemies/enemy_07_stone_guardian/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_08_bamboo_rat_demon",
+      "name": "青竹鼠妖",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-771674ce-ef31-4a5b-a97b-02453d38fd4e.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "竹刺",
+          "file": "enemies/enemy_08_bamboo_rat_demon/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "遁地",
+          "file": "enemies/enemy_08_bamboo_rat_demon/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "青竹箭雨",
+          "file": "enemies/enemy_08_bamboo_rat_demon/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "灵巧",
+          "file": "enemies/enemy_08_bamboo_rat_demon/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_09_talisman_lantern_ghost",
+      "name": "符灯鬼童",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-78c063e9-688f-43bd-9624-7500d5025daf.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "鬼火",
+          "file": "enemies/enemy_09_talisman_lantern_ghost/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "符灯封魂",
+          "file": "enemies/enemy_09_talisman_lantern_ghost/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "百灯夜行",
+          "file": "enemies/enemy_09_talisman_lantern_ghost/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "魂灯",
+          "file": "enemies/enemy_09_talisman_lantern_ghost/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_10_jade_poison_toad",
+      "name": "碧毒蟾妖",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-8d0249b1-5f11-4fe2-afef-826325796450.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "毒涎",
+          "file": "enemies/enemy_10_jade_poison_toad/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "碧毒泡",
+          "file": "enemies/enemy_10_jade_poison_toad/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "万毒雾",
+          "file": "enemies/enemy_10_jade_poison_toad/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "毒皮",
+          "file": "enemies/enemy_10_jade_poison_toad/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_11_ironclaw_falcon",
+      "name": "铁爪妖隼",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-3d2320d7-f5b8-43d9-b2c5-2e726d159b83.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "铁爪",
+          "file": "enemies/enemy_11_ironclaw_falcon/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "裂空铁羽",
+          "file": "enemies/enemy_11_ironclaw_falcon/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "凌空俯冲",
+          "file": "enemies/enemy_11_ironclaw_falcon/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "鹰眼",
+          "file": "enemies/enemy_11_ironclaw_falcon/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_12_withered_vine_spirit",
+      "name": "枯藤木魅",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-6a3432db-a832-4ded-8528-a526a6cb0e70.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "藤鞭",
+          "file": "enemies/enemy_12_withered_vine_spirit/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "枯藤缚灵",
+          "file": "enemies/enemy_12_withered_vine_spirit/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "根狱森罗",
+          "file": "enemies/enemy_12_withered_vine_spirit/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "枯木回生",
+          "file": "enemies/enemy_12_withered_vine_spirit/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_13_frost_armor_spider",
+      "name": "寒甲冰蛛",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-82b920a1-b562-428c-ba28-a365d0de8f82.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "寒螯",
+          "file": "enemies/enemy_13_frost_armor_spider/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "寒丝冰网",
+          "file": "enemies/enemy_13_frost_armor_spider/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "冰棘雨",
+          "file": "enemies/enemy_13_frost_armor_spider/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "寒甲",
+          "file": "enemies/enemy_13_frost_armor_spider/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_14_rust_armor_corpse",
+      "name": "锈甲尸兵",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-5ce0d293-249a-4463-8fd7-40bec8742e60.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "锈钩",
+          "file": "enemies/enemy_14_rust_armor_corpse/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "锈盾震击",
+          "file": "enemies/enemy_14_rust_armor_corpse/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "腐甲旋风",
+          "file": "enemies/enemy_14_rust_armor_corpse/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "尸躯",
+          "file": "enemies/enemy_14_rust_armor_corpse/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_15_blackwater_tortoise_king",
+      "name": "黑水玄龟王",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-23a08990-e5f5-4b13-9d83-03d5953e26c8.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "玄龟噬",
+          "file": "enemies/enemy_15_blackwater_tortoise_king/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "山甲反击",
+          "file": "enemies/enemy_15_blackwater_tortoise_king/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "玄水反潮",
+          "file": "enemies/enemy_15_blackwater_tortoise_king/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "玄岳龟壳",
+          "file": "enemies/enemy_15_blackwater_tortoise_king/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_16_thunder_prison_kui_ox",
+      "name": "雷狱夔牛",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-a8b4583a-9989-484b-929c-06977092a2e4.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "夔角冲",
+          "file": "enemies/enemy_16_thunder_prison_kui_ox/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "雷链",
+          "file": "enemies/enemy_16_thunder_prison_kui_ox/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "雷狱震天",
+          "file": "enemies/enemy_16_thunder_prison_kui_ox/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "雷躯",
+          "file": "enemies/enemy_16_thunder_prison_kui_ox/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    },
+    {
+      "id": "enemy_17_thousand_mask_nuo_king",
+      "name": "千面傩王",
+      "category": "enemies",
+      "source_sheet": "C:\\Users\\Mayn\\.codex\\generated_images\\01a042d5-8ef2-76f2-bfb7-bf438b26261d\\exec-ea2ccfec-cadd-407b-8497-978b753c8454.png",
+      "skills": [
+        {
+          "slot": 1,
+          "name": "傩面击",
+          "file": "enemies/enemy_17_thousand_mask_nuo_king/skill_01.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 2,
+          "name": "唤魂",
+          "file": "enemies/enemy_17_thousand_mask_nuo_king/skill_02.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 3,
+          "name": "百傩唤魂",
+          "file": "enemies/enemy_17_thousand_mask_nuo_king/skill_03.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        },
+        {
+          "slot": 4,
+          "name": "傩王敕令",
+          "file": "enemies/enemy_17_thousand_mask_nuo_king/skill_04.png",
+          "size": [
+            100,
+            100
+          ],
+          "mode": "RGBA"
+        }
+      ]
+    }
+  ]
+}

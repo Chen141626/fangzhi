@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "icon_count": 24,
+  "exact_duplicate_groups": [],
+  "checks": [
+    "100x100",
+    "RGBA",
+    "transparent exterior",
+    "no exact duplicates",
+    "original filenames preserved"
+  ]
+}

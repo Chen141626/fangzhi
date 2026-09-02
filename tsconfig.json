@@ -1,0 +1,30 @@
+{
+  /* Base configuration. Do not edit this field. */
+  "extends": "./temp/tsconfig.cocos.json",
+
+  /* Add your custom configuration here. */
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "ESNext",
+    "allowJs": true,
+    "strict": false,
+    "lib": [
+      "es2015",
+      "es2017",
+      "dom"
+    ],
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "noEmit": true
+  },
+  "include": [
+    "assets/**/*.ts",
+    "assets/**/*.d.ts",
+    "extensions/**/*.ts",
+    "extensions/**/*.d.ts"
+  ]
+}
