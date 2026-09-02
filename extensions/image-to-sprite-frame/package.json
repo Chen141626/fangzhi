@@ -1,0 +1,26 @@
+{
+  "package_version": 2,
+  "name": "image-to-sprite-frame",
+  "version": "1.0.0",
+  "description": "Batch-convert all project image assets to sprite-frame in Cocos Creator.",
+  "author": "fangzhi",
+  "editor": ">=3.8.0 <3.9.0",
+  "main": "./main.js",
+  "contributions": {
+    "menu": [
+      {
+        "path": "i18n:menu.extension/图片工具",
+        "label": "所有图片转为 sprite-frame",
+        "message": "convert-all"
+      }
+    ],
+    "messages": {
+      "convert-all": {
+        "public": false,
+        "methods": [
+          "convertAll"
+        ]
+      }
+    }
+  }
+}
