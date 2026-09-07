@@ -29,6 +29,9 @@
       },
       {
         "__id__": 706
+      },
+      {
+        "__id__": 709
       }
     ],
     "_prefab": {
@@ -17348,5 +17351,23 @@
         "__id__": 17
       }
     ]
+  },
+  {
+    "__type__": "6d273GpJEtNQ70VuL4yRo+x",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 710
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "f0JxW1QftMFrJ4mpJp8z2S"
   }
 ]
