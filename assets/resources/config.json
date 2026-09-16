@@ -1,0 +1,17 @@
+{
+  "config": {
+    "version": "1.0.0",
+    "package": "fangzhi",
+    "frameRate": 60,
+    "localDataKey": "fangzhi-local-key",
+    "localDataIv": "fangzhi-local-iv0",
+    "httpServer": "",
+    "httpTimeout": 10000,
+    "loadingTimeoutGui": 1000
+  },
+  "language": {
+    "type": ["zh"],
+    "path": { "json": "language/json", "texture": "language/texture" }
+  },
+  "bundle": { "enable": false, "server": "", "name": "", "version": "" }
+}

@@ -29,6 +29,9 @@
       },
       {
         "__id__": 384
+      },
+      {
+        "__id__": 387
       }
     ],
     "_prefab": {
@@ -2090,7 +2093,7 @@
     "propertyPath": [
       "_string"
     ],
-    "value": "限时活动"
+    "value": "仙缘奇遇"
   },
   {
     "__type__": "cc.Node",
@@ -7314,5 +7317,23 @@
         "__id__": 4
       }
     ]
+  },
+  {
+    "__type__": "2c8508WtgRK8LuYIdj9OU4t",
+    "_name": "",
+    "_objFlags": 0,
+    "__editorExtras__": {},
+    "node": {
+      "__id__": 1
+    },
+    "_enabled": true,
+    "__prefab": {
+      "__id__": 388
+    },
+    "_id": ""
+  },
+  {
+    "__type__": "cc.CompPrefabInfo",
+    "fileId": "f6Vx1gDbJP15Bdt2y0uM8e"
   }
 ]

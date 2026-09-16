@@ -1,0 +1,921 @@
+{
+  "bundle": "home_popups",
+  "bundle_root": "D:\\fangzhi\\assets\\home_popups",
+  "source_root": "D:\\放置\\ui\\q_xiuxian_home\\popups",
+  "private_png_count": 100,
+  "shared_png_count": 9,
+  "runtime_png_count": 109,
+  "copied": 109,
+  "unchanged": 0,
+  "removed_private_duplicates_and_demos": [
+    "texture/best_value_gift_packs/buttons/btn_buy_crystal_collection.png",
+    "texture/best_value_gift_packs/buttons/btn_buy_cultivation_supply.png",
+    "texture/best_value_gift_packs/buttons/btn_buy_daily_special.png",
+    "texture/best_value_gift_packs/cards/offer_card_empty.png",
+    "texture/best_value_gift_packs/decorations/recommended_ribbon.png",
+    "texture/best_value_gift_packs/headers/subtitle_value_support.png",
+    "texture/best_value_gift_packs/headers/title_best_value_gift_packs.png",
+    "texture/best_value_gift_packs/icons/crystal_compass_100x100.png",
+    "texture/best_value_gift_packs/illustrations/offer_crystal_chest.png",
+    "texture/best_value_gift_packs/illustrations/offer_daily_chest.png",
+    "texture/best_value_gift_packs/illustrations/offer_supply_chest.png",
+    "texture/best_value_gift_packs/panels/label_daily_refresh.png",
+    "texture/cumulative_recharge_rewards/buttons/btn_go_recharge.png",
+    "texture/cumulative_recharge_rewards/buttons/btn_state_claimable.png",
+    "texture/cumulative_recharge_rewards/buttons/btn_state_claimed.png",
+    "texture/cumulative_recharge_rewards/buttons/btn_state_locked.png",
+    "texture/cumulative_recharge_rewards/headers/title_cumulative_recharge.png",
+    "texture/cumulative_recharge_rewards/icons/milestone_chest_01.png",
+    "texture/cumulative_recharge_rewards/icons/milestone_chest_02.png",
+    "texture/cumulative_recharge_rewards/icons/milestone_chest_03.png",
+    "texture/cumulative_recharge_rewards/icons/milestone_chest_04.png",
+    "texture/cumulative_recharge_rewards/icons/reward_mystery_fragment_100x100.png",
+    "texture/cumulative_recharge_rewards/icons/reward_orb_2_100x100.png",
+    "texture/cumulative_recharge_rewards/icons/reward_talisman_5_100x100.png",
+    "texture/cumulative_recharge_rewards/illustrations/banner_cumulative_recharge.png",
+    "texture/cumulative_recharge_rewards/panels/recharge_progress.png",
+    "texture/cumulative_recharge_rewards/rows/recharge_reward_row_empty.png",
+    "texture/daily_welfare/buttons/btn_claim_reward.png",
+    "texture/daily_welfare/cards/reward_card_crystal.png",
+    "texture/daily_welfare/cards/reward_card_gold.png",
+    "texture/daily_welfare/cards/reward_card_jade.png",
+    "texture/daily_welfare/cards/reward_card_pill.png",
+    "texture/daily_welfare/decorations/popup_bottom_frame.png",
+    "texture/daily_welfare/headers/banner_today_fortune.png",
+    "texture/daily_welfare/headers/title_daily_welfare.png",
+    "texture/daily_welfare/icons/online_chest_10m.png",
+    "texture/daily_welfare/icons/online_chest_30m.png",
+    "texture/daily_welfare/icons/online_chest_60m.png",
+    "texture/daily_welfare/icons/reward_crystal_100x100.png",
+    "texture/daily_welfare/icons/reward_jade_100x100.png",
+    "texture/daily_welfare/icons/reward_pill_100x100.png",
+    "texture/daily_welfare/panels/label_claimable.png",
+    "texture/daily_welfare/panels/label_online_25m.png",
+    "texture/daily_welfare/panels/online_progress_bar.png",
+    "texture/daily_welfare/panels/section_online_rewards.png",
+    "texture/growth_fund/buttons/btn_claim_all.png",
+    "texture/growth_fund/buttons/btn_state_claimable.png",
+    "texture/growth_fund/buttons/btn_state_claimed.png",
+    "texture/growth_fund/buttons/btn_state_locked.png",
+    "texture/growth_fund/headers/section_level_rewards.png",
+    "texture/growth_fund/headers/title_growth_fund.png",
+    "texture/growth_fund/illustrations/banner_cultivation_path.png",
+    "texture/growth_fund/panels/level_progress_rail.png",
+    "texture/growth_fund/rows/level_reward_row_empty.png",
+    "texture/immortal_fate_encounter/buttons/btn_confirm_choice.png",
+    "texture/immortal_fate_encounter/cards/choice_follow_crane_selected.png",
+    "texture/immortal_fate_encounter/cards/choice_gift_gathering_pill.png",
+    "texture/immortal_fate_encounter/cards/choice_leave_safely.png",
+    "texture/immortal_fate_encounter/headers/story_title_spirit_crane.png",
+    "texture/immortal_fate_encounter/headers/title_immortal_fate_encounter.png",
+    "texture/immortal_fate_encounter/icons/cost_qi_gathering_pill_100x100.png",
+    "texture/immortal_fate_encounter/illustrations/choice_follow_crane_art.png",
+    "texture/immortal_fate_encounter/illustrations/choice_leave_art.png",
+    "texture/immortal_fate_encounter/illustrations/choice_pill_art.png",
+    "texture/immortal_fate_encounter/illustrations/encounter_scene_spirit_crane.png",
+    "texture/immortal_fate_encounter/panels/story_description.png",
+    "texture/limited_time_events/buttons/btn_cloud_sea_treasure.png",
+    "texture/limited_time_events/buttons/btn_completed_disabled.png",
+    "texture/limited_time_events/buttons/btn_go_daily_training.png",
+    "texture/limited_time_events/buttons/btn_go_secret_realm.png",
+    "texture/limited_time_events/headers/title_limited_time_events.png",
+    "texture/limited_time_events/illustrations/banner_cloud_sea_treasure.png",
+    "texture/limited_time_events/rows/task_row_empty.png",
+    "texture/limited_time_events/tabs/tab_01_treasure_hunt_selected.png",
+    "texture/limited_time_events/tabs/tab_02_limited_recharge.png",
+    "texture/limited_time_events/tabs/tab_03_login_gifts.png",
+    "texture/limited_time_events/tabs/tab_04_immortal_fate_exchange.png",
+    "texture/limited_time_events/tabs/tab_05_special_gift_packs.png",
+    "texture/server_opening_ranking/buttons/btn_power_up.png",
+    "texture/server_opening_ranking/decorations/popup_bottom_frame.png",
+    "texture/server_opening_ranking/headers/ranking_rewards.png",
+    "texture/server_opening_ranking/headers/title_server_opening_ranking.png",
+    "texture/server_opening_ranking/illustrations/podium_top_three.png",
+    "texture/server_opening_ranking/panels/ranking_row_empty.png",
+    "texture/server_opening_ranking/panels/tab_power_ranking.png",
+    "texture/server_opening_ranking/portraits/rank_04_yunlan.png",
+    "texture/server_opening_ranking/portraits/rank_05_qingmu.png",
+    "texture/server_opening_ranking/portraits/rank_06_xinghe.png",
+    "texture/server_opening_ranking/portraits/rank_07_moyu.png",
+    "texture/server_opening_ranking/portraits/rank_08_qingshuang.png",
+    "texture/server_opening_ranking/portraits/rank_09_changfeng.png",
+    "texture/seven_day_login/buttons/btn_claim_reward.png",
+    "texture/seven_day_login/cards/day_01_claimable.png",
+    "texture/seven_day_login/cards/day_02.png",
+    "texture/seven_day_login/cards/day_03.png",
+    "texture/seven_day_login/cards/day_04.png",
+    "texture/seven_day_login/cards/day_05.png",
+    "texture/seven_day_login/cards/day_06.png",
+    "texture/seven_day_login/cards/day_07_featured.png",
+    "texture/seven_day_login/decorations/popup_bottom_frame.png",
+    "texture/seven_day_login/headers/banner_cumulative_login.png",
+    "texture/seven_day_login/headers/title_seven_day_login.png",
+    "texture/seven_day_login/icons/reward_chest_100x100.png",
+    "texture/seven_day_login/portraits/day_07_character_fragment.png"
+  ],
+  "removed_stale_common_paths": [
+    "buttons/btn_close_blue_tassel.png",
+    "icons/reward_chest_red_100x100.png",
+    "icons/reward_crystal_100x100.png",
+    "icons/reward_gold_ingot_100x100.png",
+    "icons/reward_jade_100x100.png",
+    "icons/reward_scroll_100x100.png",
+    "icons/reward_scroll_small_100x100.png",
+    "icons/reward_spirit_potion_100x100.png",
+    "overlays/overlay_dim_57.png"
+  ],
+  "demo_assets_excluded": [
+    "best_value_gift_packs/cards/offer_cultivation_supply.png",
+    "best_value_gift_packs/cards/offer_daily_special.png",
+    "best_value_gift_packs/cards/offer_immortal_crystal_collection.png",
+    "cumulative_recharge_rewards/rows/recharge_0060_reward.png",
+    "cumulative_recharge_rewards/rows/recharge_0300_reward.png",
+    "cumulative_recharge_rewards/rows/recharge_1000_reward.png",
+    "cumulative_recharge_rewards/rows/recharge_2000_reward.png",
+    "growth_fund/rows/level_10_reward.png",
+    "growth_fund/rows/level_20_reward.png",
+    "growth_fund/rows/level_30_reward.png",
+    "growth_fund/rows/level_40_reward.png",
+    "growth_fund/rows/level_50_reward.png",
+    "limited_time_events/rows/task_daily_training.png",
+    "limited_time_events/rows/task_online_sixty_minutes.png",
+    "limited_time_events/rows/task_secret_realm_three_times.png",
+    "server_opening_ranking/panels/my_rank.png",
+    "server_opening_ranking/panels/ranking_table.png"
+  ],
+  "excluded": [
+    "reference/**",
+    "composite/**",
+    "headers/layers/**",
+    "*contact_sheet*",
+    "*edge_qa*",
+    "*review*"
+  ],
+  "backup_root": null,
+  "verification_errors": [],
+  "files": [
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\buttons\\btn_claim_reward.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\btn_claim_reward.png",
+      "sha256": "643fbe756faf3518df03c3c7ea2dee55767ca3791dd3a48e1036d0e87ab081aa",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\cards\\reward_card_crystal.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_card_crystal.png",
+      "sha256": "2a854262ef76a0fdbc44c066af5f9cb2d8f61e49d014047816d68b5efe0289c6",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\cards\\reward_card_gold.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_card_gold.png",
+      "sha256": "b3d4d522c58fc547178febcb6389c399914749f7adb9cdeb9827ebb7970f033c",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\cards\\reward_card_jade.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_card_jade.png",
+      "sha256": "9b4f69dcce3cab818b2e8f27f3da00d1e640a65f9190581e1322e1b8d99ac1a0",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\cards\\reward_card_pill.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_card_pill.png",
+      "sha256": "7b31c6f850d46051e35aeea4423b0d12ccc6f4d9dde02c7e9009b88a9511e723",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\decorations\\popup_bottom_frame.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\popup_bottom_frame.png",
+      "sha256": "698786b70b8c0d85fddb4524a6362570e45f1b688ba1237eb35aa5feff59014e",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\headers\\banner_today_fortune.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\banner_today_fortune.png",
+      "sha256": "dbcbb0229f8ff5d16951fcea4e3d2e299e680585263e555d6681108ece853f92",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\headers\\title_daily_welfare.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\title_daily_welfare.png",
+      "sha256": "1efe87312ef28ca953fd0cd7ca12261d7e7e58969cec6f50ab24dd04280450a9",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\online_chest_10m.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\online_chest_10m.png",
+      "sha256": "0f4111881a62d609f15573021b895f17fb987827fa4db74e1e5b3feef4c29a2e",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\online_chest_30m.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\online_chest_30m.png",
+      "sha256": "1e02555ebd5774b652b2e569aa1965e0080f9fe36773b2aa14ae10ecab17afe2",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\online_chest_60m.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\online_chest_60m.png",
+      "sha256": "0e91aa023104d0fa6868da76a2d51e47c1df7ece59fc973b9b33a6836610ee96",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\reward_crystal_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_crystal_100x100.png",
+      "sha256": "fc1d81ec319e8b1d6309210d06d81b82f11b46a589a5245921e673c73ecc6d9f",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\reward_jade_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_jade_100x100.png",
+      "sha256": "eb778ace8ffa3663a38a23e645f14e8bbf95d7a4f5711c07e1e1fc4a02099399",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\reward_pill_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\reward_pill_100x100.png",
+      "sha256": "e3791790c831033c82e90f76ae3071ff3c4529bfcc48a35a41be3489422421ae",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\panels\\label_claimable.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\label_claimable.png",
+      "sha256": "c140bc75a56fd8e276b73f4f18dd06e530efe302f20fa13e79105e68e8799e4a",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\panels\\label_online_25m.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\label_online_25m.png",
+      "sha256": "a3eb3acd130a8956cc5eec573be6afa0be4ad4c19477842559fa82ed44f786f5",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\panels\\online_progress_bar.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\online_progress_bar.png",
+      "sha256": "ea88d7cd335a7b26ba76b47cc0ff3af048dfaef1ce6e8899c7fc388eaf12c007",
+      "status": "copied"
+    },
+    {
+      "scope": "daily_welfare",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\panels\\section_online_rewards.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\daily_welfare\\section_online_rewards.png",
+      "sha256": "167f50ae06eea6484766ce7426d7775b064af8929faa637748a31879d5e9198d",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\buttons\\btn_claim_reward.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\btn_claim_reward.png",
+      "sha256": "723c54e3c6a72d772ba755bf8918ad1718c990b2512819af63e9a8cee613791f",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_01_claimable.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_01_claimable.png",
+      "sha256": "255e50ec1c4fbf8ea8851e7e86be6334c958db8168f94a87cafdcb8d506a03f4",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_02.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_02.png",
+      "sha256": "95ba81a2483eafa014cd93f9f1fd44492b94acc5d0631422e922241c1058870d",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_03.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_03.png",
+      "sha256": "c13e880980eb8368a7575f57fe2f5a82c11489a98c672fc88f0c802fd727e68a",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_04.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_04.png",
+      "sha256": "5fcbd561448d3b3e1000a26acb134c3cd2387feaeaba42beba45b79b3360718e",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_05.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_05.png",
+      "sha256": "6a6bba40d62c085f91027179085bf96c6b1865c351bacec5a52ac9b44b8cd75e",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_06.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_06.png",
+      "sha256": "fad6449ebee3ccb2ccd0b62afc16060caf5668ff30f701da77d31149286b7bc8",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\cards\\day_07_featured.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_07_featured.png",
+      "sha256": "05849478d71f8cf825e04a4fc5cfed85a90552ed4869c5a7a80c73fbe35b711e",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\decorations\\popup_bottom_frame.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\popup_bottom_frame.png",
+      "sha256": "9282c2620433c0b947d61e31e9bb5cf1d3c9818820c568f77fa5aedd73f98b0b",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\headers\\banner_cumulative_login.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\banner_cumulative_login.png",
+      "sha256": "a228baf0ef7eb2f5ac6d1f0472ef7421edc58b1b1f23437d2296c0e800f73b1f",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\headers\\title_seven_day_login.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\title_seven_day_login.png",
+      "sha256": "abe414493f327dea9d48cb508b9bb23f3372b74e4152a5c2853fad1b4053cecb",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\icons\\reward_chest_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\reward_chest_100x100.png",
+      "sha256": "5c4a178c107c3701e62787d9dafe700d97cd2cfc476af2706e8ca4b559250a2f",
+      "status": "copied"
+    },
+    {
+      "scope": "seven_day_login",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\portraits\\day_07_character_fragment.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\seven_day_login\\day_07_character_fragment.png",
+      "sha256": "8286e7c2b53170d49159e4b4ce1e608dcf59fd904633db7024e827b9b1c1f1bb",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\buttons\\btn_cloud_sea_treasure.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\btn_cloud_sea_treasure.png",
+      "sha256": "524ba2079b28f494f069af63d1ed98e27e127aff4f6c7a281b6a5dfed0bb1c2b",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\buttons\\btn_completed_disabled.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\btn_completed_disabled.png",
+      "sha256": "74b74d8747092aa4d4e61f7b8d0800e7838b2019bc58fc8aa082abba4a1f7a57",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\buttons\\btn_go_daily_training.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\btn_go_daily_training.png",
+      "sha256": "98e93cf8566d35a6f4d50040cb2281bcb6994621d676555da50c553c05910953",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\buttons\\btn_go_secret_realm.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\btn_go_secret_realm.png",
+      "sha256": "d6f980b76a74fba7f47cb623ef45b22668f5b7f51a931ad86ff75e06fb88bc40",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\headers\\title_limited_time_events.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\title_limited_time_events.png",
+      "sha256": "a4a4b89031117102886b96340ab63042bdfe1627ead7d3a742f6c4b9725b7c13",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\illustrations\\banner_cloud_sea_treasure.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\banner_cloud_sea_treasure.png",
+      "sha256": "77e2db13ba93edd45a57732cdcb10a5d16b1323cc047434475fdc3e9c7a3d185",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\rows\\task_row_empty.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\task_row_empty.png",
+      "sha256": "a3fea2905c520030b366cf21a7eebdceca7ba45dca5df7c7cb24434985bcdadf",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\tabs\\tab_01_treasure_hunt_selected.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\tab_01_treasure_hunt_selected.png",
+      "sha256": "29bc31134fc1ae1bb49f1d913b84eeab5fcc457ad29d5aacee41a073e8233c69",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\tabs\\tab_02_limited_recharge.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\tab_02_limited_recharge.png",
+      "sha256": "47bf466896bd4c60f40d49ff54fc5f6b61ef04a4e1d0379306d15d0e44b4ba46",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\tabs\\tab_03_login_gifts.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\tab_03_login_gifts.png",
+      "sha256": "3a053544ee3f80873cb84e1c90fe871f0d4458377b1e5324718dfe36a7c7d74a",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\tabs\\tab_04_immortal_fate_exchange.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\tab_04_immortal_fate_exchange.png",
+      "sha256": "4228957b9180bf97690f20b68d0d00db186711958adc4d59c8d9de063bcaa8f8",
+      "status": "copied"
+    },
+    {
+      "scope": "limited_time_events",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\limited_time_events\\tabs\\tab_05_special_gift_packs.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\limited_time_events\\tab_05_special_gift_packs.png",
+      "sha256": "67bac4f837f7d49e36535592bddf7b1d707a61acea697b6ca30bca139f9e24bf",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\buttons\\btn_power_up.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\btn_power_up.png",
+      "sha256": "0ed19a0d81f2ae401bc17e73e397582e49897651ecaf68a407e10379165b0c04",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\decorations\\popup_bottom_frame.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\popup_bottom_frame.png",
+      "sha256": "be19f261e160c12c2a2e336582d869f3d49b307646e651f8cebe9cec0ad00363",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\headers\\ranking_rewards.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\ranking_rewards.png",
+      "sha256": "a09a9c6c9a10ef18a81696fa3c98eb68b0dfe0bd4217fa42741617d6037c12b8",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\headers\\title_server_opening_ranking.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\title_server_opening_ranking.png",
+      "sha256": "c4885aea385f8f355d51818fa72dcd0c2b39c986376267dade08dc2a1b51376d",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\illustrations\\podium_top_three.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\podium_top_three.png",
+      "sha256": "74416ef20f542c3b9bb4c0c70622cce9da88d8e7bddc2bb6fe3b67b7095e62a4",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\panels\\ranking_row_empty.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\ranking_row_empty.png",
+      "sha256": "bb2dcb96353461dc02d2dbdaad96abb5e060ea7325023652a60e9f41b71f994f",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\panels\\tab_power_ranking.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\tab_power_ranking.png",
+      "sha256": "93bacbb66df0d96928076b65cf2928b2955f4ef8083603bb83c74735c384495f",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\portraits\\rank_04_yunlan.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\rank_04_yunlan.png",
+      "sha256": "bdfac6157a7b202c1cfa981a108e1306f148cee3cbbb2b334931975e63e52eb0",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\portraits\\rank_05_qingmu.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\rank_05_qingmu.png",
+      "sha256": "c95a7fad3ca4d7a946d91ad2da259d42c3b462daa1e98b9a2fa4143a6b00e005",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\portraits\\rank_06_xinghe.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\rank_06_xinghe.png",
+      "sha256": "21374e8a2727f50c1f4edb5a62691f684d5878def9a5904fc266f26fcb879365",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\portraits\\rank_07_moyu.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\rank_07_moyu.png",
+      "sha256": "817eceb68a032e57cdcbeae78bba33bbfcee2ee2eff70d9e1a8e8535f3da017e",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\portraits\\rank_08_qingshuang.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\rank_08_qingshuang.png",
+      "sha256": "b8d1301c69548fc2adbffc8524fa930f7f89ce0cbb04ec7cdbe09fa79aa6def8",
+      "status": "copied"
+    },
+    {
+      "scope": "server_opening_ranking",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\server_opening_ranking\\portraits\\rank_09_changfeng.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\server_opening_ranking\\rank_09_changfeng.png",
+      "sha256": "2b2b74f30029e35097abd8d076b608ff79c5b5257d12b3ac8ee84bf465f912bd",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\cards\\offer_card_empty.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\offer_card_empty.png",
+      "sha256": "88643435b0f1cf9a1533f06b519c23e1efded2104d7cdc3ddfc98f2d58374a1d",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\decorations\\recommended_ribbon.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\recommended_ribbon.png",
+      "sha256": "177a7bf4782d2e5fd34eb41db1694dc66f61754d83493c743dd15e9e74cd1b84",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\headers\\subtitle_value_support.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\subtitle_value_support.png",
+      "sha256": "bd66db853b8d3d948a3d3b00e5723567408605d49e5fb4b30b1206864fb301ae",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\headers\\title_best_value_gift_packs.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\title_best_value_gift_packs.png",
+      "sha256": "6614e3b6019c22d40b6a5b5ca47f14302af5185ec4cf65ad471d6743d61b6a25",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\icons\\crystal_compass_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\crystal_compass_100x100.png",
+      "sha256": "a7d6fbbcebed0b9f034e19441a3987caf0dc927c48b1be3d5749fbe8c7d4e0a2",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\illustrations\\offer_crystal_chest.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\offer_crystal_chest.png",
+      "sha256": "01dc806db1b959694f17f2ca2869b55abc0c903815e8a09101086e605fe28f50",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\illustrations\\offer_daily_chest.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\offer_daily_chest.png",
+      "sha256": "6272f989f874267e9992e0dad0c6bc371c77c2bacf0f2533840c6d7c6eeb752a",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\illustrations\\offer_supply_chest.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\offer_supply_chest.png",
+      "sha256": "6e5651274340d27d6b5bb5b0484505fa01c45002e59315560da1f63b1b6813d9",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\panels\\label_daily_refresh.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\label_daily_refresh.png",
+      "sha256": "60d76a6701193bb19b035c6b3985316679ffae54fe013cdd1f62707eff5a07b7",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\buttons\\btn_confirm_choice.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\btn_confirm_choice.png",
+      "sha256": "3dd4f96552af200c8246a11baf6c088d48efe92bb5d1144adf502c4dbda7e392",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\cards\\choice_follow_crane_selected.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\choice_follow_crane_selected.png",
+      "sha256": "89de650962af4edd413c27d988ebe32225a35e7ccd170b67144fd7bce5db6f96",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\cards\\choice_gift_gathering_pill.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\choice_gift_gathering_pill.png",
+      "sha256": "e816495076a16f97def2af7c3efc76eeb255334c4f8bfbd3bb2b5d716445dff9",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\cards\\choice_leave_safely.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\choice_leave_safely.png",
+      "sha256": "56ca6fa7e75dcf6acfe3d92910296ba0d21f4eab5d800ee8b8be2fd4e4a30b6d",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\headers\\story_title_spirit_crane.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\story_title_spirit_crane.png",
+      "sha256": "d2a92581152031e1ebeec3541a1d9113dd304e21f8e30edcaedac8ba10942350",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\headers\\title_immortal_fate_encounter.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\title_immortal_fate_encounter.png",
+      "sha256": "e7a541424a8e260bf321c8102405870862536a1a7cb05f94db95aa1930e31034",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\icons\\cost_qi_gathering_pill_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\cost_qi_gathering_pill_100x100.png",
+      "sha256": "9ce32380b8dd247ed79ca482cd60557843fc0b9c477c094c823a244467edcff9",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\illustrations\\choice_follow_crane_art.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\choice_follow_crane_art.png",
+      "sha256": "10866e18abb8190da086460643eebf8aa4cfd53945721a7e12ceb4c9b60bb0d6",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\illustrations\\choice_leave_art.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\choice_leave_art.png",
+      "sha256": "482b056e44932c4424474529175bae05ded2b01511795887566842738bc5b8cc",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\illustrations\\choice_pill_art.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\choice_pill_art.png",
+      "sha256": "a5690d8fe879804a1f95fe2af5d971564712f2520767eddf58031a9e33d34fdd",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\illustrations\\encounter_scene_spirit_crane.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\encounter_scene_spirit_crane.png",
+      "sha256": "56c0a402108784a5b4d2a775874cb2d3c129de3a43f7d2199ac37adbd2457457",
+      "status": "copied"
+    },
+    {
+      "scope": "immortal_fate_encounter",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\immortal_fate_encounter\\panels\\story_description.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\immortal_fate_encounter\\story_description.png",
+      "sha256": "e31be527634f560ea4a39c0858c2efe1db45fa646405357f58f15701679bc7f1",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\buttons\\btn_claim_all.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\btn_claim_all.png",
+      "sha256": "f2bd2d5f59e38c0727a80b128dbec08d73698d4125e9440d08808d7cb9f43f9b",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\buttons\\btn_state_claimable.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\btn_state_claimable.png",
+      "sha256": "87da10fd5c4825d0c388e621c2169c29a7dd57fa60e83bfd2a3715bdec4399c9",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\buttons\\btn_state_claimed.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\btn_state_claimed.png",
+      "sha256": "5623b426dfef18e337f50fde7c7a11a27fd9c7d265492e6bc212b2a93d83e692",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\buttons\\btn_state_locked.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\btn_state_locked.png",
+      "sha256": "2700c1ec36d2a89bfeefb02abff4a91880fb3daef2d487caa859d9d93a5cf845",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\headers\\section_level_rewards.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\section_level_rewards.png",
+      "sha256": "58f98a857bb0a1a8e23ceb9c413437a84814cb405ca3d777174ab21960ef246e",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\headers\\title_growth_fund.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\title_growth_fund.png",
+      "sha256": "39c504d924ed5020710b58a7dc9f0094357ea37d01b3cd94fe8410a910b10fe9",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\illustrations\\banner_cultivation_path.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\banner_cultivation_path.png",
+      "sha256": "d64d08d1e8adc4d9c5920c92085d55e1ad20a86c165950bb5d0f5a67a437f4ab",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\panels\\level_progress_rail.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\level_progress_rail.png",
+      "sha256": "14a95e2946b410c4f9b1517e874993142db61cbe0e268f0d499f5a3bc190c3a8",
+      "status": "copied"
+    },
+    {
+      "scope": "growth_fund",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\rows\\level_reward_row_empty.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\growth_fund\\level_reward_row_empty.png",
+      "sha256": "81429346aac99a115b9d380a2962d12e9723bc4e74a2f7120d0776951e1a1b77",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\buttons\\btn_go_recharge.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\btn_go_recharge.png",
+      "sha256": "033a1b945252a86d2281a881b2672e5561684848fde4a3edca19cbda4ca9ed0a",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\buttons\\btn_state_claimable.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\btn_state_claimable.png",
+      "sha256": "4510b78e7bda5374afbea8ecf28a27ac73f52d21a942a34f1972e1f0652b5e64",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\buttons\\btn_state_claimed.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\btn_state_claimed.png",
+      "sha256": "cef8b8765149a36865f0566533df869fd69ab36122200115c220e35266377ca8",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\buttons\\btn_state_locked.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\btn_state_locked.png",
+      "sha256": "726dfcf851f0111045ec090594eec1f0d005212815fb05ab4d350ea7fdff3a27",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\headers\\title_cumulative_recharge.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\title_cumulative_recharge.png",
+      "sha256": "84d821b77a7971911e6b6df106011fcdd56c2e62151e44f8512e03467a88224c",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\icons\\reward_mystery_fragment_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\reward_mystery_fragment_100x100.png",
+      "sha256": "c35c6d3af8edaef600068a9412d8f2c3fda372f88a354f13d30299c429573796",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\icons\\reward_orb_2_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\reward_orb_2_100x100.png",
+      "sha256": "573a2369844414daead0dcb5b862ec694e5544884708452c2ce7d4844ae9dfc3",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\icons\\reward_talisman_5_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\reward_talisman_5_100x100.png",
+      "sha256": "bca776cb24ebd7b124a37254716e34c54113d2e994added5eeae35e8b3bfc19a",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\illustrations\\banner_cumulative_recharge.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\banner_cumulative_recharge.png",
+      "sha256": "746e867421a3b9850ea46b636c7721602376010d95bc90b7d9f45ec23a1dfac4",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\panels\\recharge_progress.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\recharge_progress.png",
+      "sha256": "2564b15fa00f35cefe7796ecca2f127ff350513d211835b1106c2397854771b9",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\rows\\recharge_reward_row_empty.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\recharge_reward_row_empty.png",
+      "sha256": "a168f7ce95fcc6312b2be3eb9d7cf934670e28a63f3994d690ec535ef68ddb34",
+      "status": "copied"
+    },
+    {
+      "scope": "best_value_gift_packs",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\best_value_gift_packs\\buttons\\btn_buy_crystal_collection.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\best_value_gift_packs\\btn_buy.png",
+      "sha256": "d967c3f626da812c55e842a39f595814bfc847dd2e5d55b7f51ea6a1d66c49a8",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\icons\\milestone_chest_01.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\milestone_chest_red.png",
+      "sha256": "2b49271cdcc9e1b1fcc7de420a205d4d003f43d098c5856ba1e22e880366b7f6",
+      "status": "copied"
+    },
+    {
+      "scope": "cumulative_recharge_rewards",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\icons\\milestone_chest_03.png",
+      "destination": "D:\\fangzhi\\assets\\home_popups\\texture\\cumulative_recharge_rewards\\milestone_chest_blue.png",
+      "sha256": "cfb6090a71381e1d44c1ca72e27f1166ded17f35a555c479dd65ac54ba85a3a1",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\buttons\\btn_close.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\btn_close_blue_tassel.png",
+      "sha256": "f44e33e788f859e2e36883001daeb573040b4fdd6929a0dd18561e4a70e9fc15",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\overlay\\overlay_dim_57.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\overlay_dim_57.png",
+      "sha256": "e961300a2e164631def4cf06df1371ee4ca01f803e7f5d80a8655b425079a153",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\daily_welfare\\icons\\reward_gold_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_gold_ingot_100x100.png",
+      "sha256": "20ce1c35e48ca580d611a4f805b63d6242d7434699f21912016199afcb5d2824",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\icons\\reward_crystal_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_crystal_100x100.png",
+      "sha256": "80751b889b4a7007eccd4bb3fb9132816d85dace0866cebad4343bba706fd74f",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\icons\\reward_jade_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_jade_100x100.png",
+      "sha256": "11b24144e870a57d18699414f027de76df0448d9a6773022b5f90333a30afec5",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\icons\\reward_spirit_potion_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_spirit_potion_100x100.png",
+      "sha256": "2d4c943dd2aba6be425858a2304e7c8c006caf98275470a8126e0c5f0111a6f7",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\growth_fund\\icons\\reward_chest_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_chest_red_100x100.png",
+      "sha256": "6d0bc1ddef05d39044ad81ba1d7dd6d1cda88dbc36b5ba7d4342c9562fbe8d15",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\cumulative_recharge_rewards\\icons\\reward_scroll_10_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_scroll_100x100.png",
+      "sha256": "4656d916f8a31383c96387cc5fd42d2036d7217da99d9f04043e58c73a1266bd",
+      "status": "copied"
+    },
+    {
+      "scope": "common",
+      "source": "D:\\放置\\ui\\q_xiuxian_home\\popups\\seven_day_login\\icons\\reward_scroll_100x100.png",
+      "destination": "D:\\fangzhi\\assets\\resources\\gui\\common\\home_popups\\reward_scroll_small_100x100.png",
+      "sha256": "05e2c65b20b46bae739b143f51db91148db18ec86f6c34924ea1dcfcfb66a813",
+      "status": "copied"
+    }
+  ]
+}

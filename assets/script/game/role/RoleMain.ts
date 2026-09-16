@@ -1,4 +1,6 @@
-import { _decorator, Component, EventTouch, Label, Node } from 'cc';
+import { _decorator, BlockInputEvents, Component, EventTouch, Label, Node } from 'cc';
+import { oops } from 'db://oops-framework/core/Oops';
+import { UIID } from '../../config/UIConfig';
 import { RoleProfession, RoleType } from '../../core/GameEnum';
 import {
     PlayerRoleInstance,
@@ -49,6 +51,8 @@ export class RoleMain extends Component {
     private _backButton: Node | null = null;
 
     protected onLoad(): void {
+        // 全屏页面拦截触摸，避免点击穿透到下方主界面。
+        if (!this.getComponent(BlockInputEvents)) this.addComponent(BlockInputEvents);
         const roleListNode = findChild(this.node, 'bg/roleList');
         this._scrollList = roleListNode?.getComponent(ScrollList) ?? null;
         this._roleItemTemplate = findChild(this.node, 'bg/roleList/view/content/roleItem');
@@ -187,6 +191,6 @@ export class RoleMain extends Component {
     }
 
     private onBack(): void {
-        this.node.active = false;
+        oops.gui.remove(UIID.Role, false);
     }
 }
