@@ -17,15 +17,17 @@ import {
 } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
+import { BattleAnimationPlayer } from './BattleAnimationPlayer';
 import { BATTLE_BUFF_CONFIG } from './BattleBuffConfig';
 import { BattleDemoUnitConfig, BATTLE_DEMO_ALLIES, BATTLE_DEMO_ENEMIES } from './BattleDemoConfig';
-import { BattleFlowController, BattleStepResult } from './BattleFlowController';
+import { BattleFlowController, BattleStepResult, cloneBattleUnits } from './BattleFlowController';
 import { BattleCamp, BattleLogEntry, BattleUnitState } from './BattleEffectTypes';
 
 const { ccclass, menu } = _decorator;
 
 interface BattleUnitView {
     item: Node;
+    overlay: Node;
     icon: Sprite | null;
     hpBar: ProgressBar | null;
     nameLabel: Label;
@@ -48,6 +50,7 @@ function findChild(root: Node, path: string): Node | null {
 @menu('Game/Battle/BattleMain')
 export class BattleMain extends Component {
     private readonly _flow = new BattleFlowController();
+    private readonly _animationPlayer = new BattleAnimationPlayer();
     private readonly _unitViews = new Map<string, BattleUnitView>();
     private _backButton: Node | null = null;
     private _roundLabel: Label | null = null;
@@ -56,6 +59,8 @@ export class BattleMain extends Component {
     private _resultLayer: Node | null = null;
     private _resultLabel: Label | null = null;
     private _restartButton: Node | null = null;
+    private _runToken = 0;
+    private _loopRunning = false;
 
     protected onLoad(): void {
         if (!this.getComponent(BlockInputEvents)) this.addComponent(BlockInputEvents);
@@ -70,59 +75,167 @@ export class BattleMain extends Component {
     }
 
     protected onDisable(): void {
-        this.unschedule(this.advanceBattle);
+        this.stopAutoBattle();
+    }
+
+    protected update(deltaTime: number): void {
+        this._animationPlayer.update(deltaTime);
     }
 
     protected onDestroy(): void {
+        this.stopAutoBattle();
         this._backButton?.off(Node.EventType.TOUCH_END, this.onBack, this);
         this._restartButton?.off(Node.EventType.TOUCH_END, this.restartBattle, this);
     }
 
     /** 固定阵容重新开战，也供结果面板按钮调用。 */
     restartBattle(): void {
-        this.unschedule(this.advanceBattle);
+        this.stopAutoBattle();
+        const token = this._runToken;
         this._resultLayer && (this._resultLayer.active = false);
         const startResult = this._flow.start();
-        this.attachUnitsToViews('ally', BATTLE_DEMO_ALLIES);
-        this.attachUnitsToViews('enemy', BATTLE_DEMO_ENEMIES);
+        const portraitLoading = Promise.all([
+            this.attachUnitsToViews('ally', BATTLE_DEMO_ALLIES, token),
+            this.attachUnitsToViews('enemy', BATTLE_DEMO_ENEMIES, token),
+        ]).then(() => undefined);
         this.renderAll(null);
         this.setActionText('双方入场，战斗开始！', startResult.logs);
         if (this._roundLabel) this._roundLabel.string = '准备回合';
+        if (this._stateLabel) this._stateLabel.string = '动画资源加载中…';
+        void this.prepareAndRunBattle(token, portraitLoading);
+    }
+
+    private async prepareAndRunBattle(token: number, portraitLoading: Promise<void>): Promise<void> {
+        await Promise.all([
+            portraitLoading,
+            this._animationPlayer.preload(this._flow.units.map((unit) => unit.configId)),
+        ]);
+        if (!this.isCurrentRun(token)) return;
+        this._animationPlayer.reset();
         if (this._stateLabel) this._stateLabel.string = '自动战斗 · 5 vs 5';
-        this.scheduleOnce(this.startAutoBattle, 0.65);
+        await this.delay(350);
+        if (!this.isCurrentRun(token)) return;
+        await this.runBattleLoop(token);
     }
 
-    private startAutoBattle(): void {
-        if (this._flow.status !== 'running') return;
-        this.advanceBattle();
-        this.schedule(this.advanceBattle, 0.85);
-    }
-
-    private advanceBattle(): void {
-        if (this._flow.status !== 'running') {
-            this.finishBattle();
-            return;
+    private async runBattleLoop(token: number): Promise<void> {
+        if (this._loopRunning || !this.isCurrentRun(token)) return;
+        this._loopRunning = true;
+        while (this.isCurrentRun(token) && this._flow.status === 'running') {
+            const step = this._flow.step();
+            this.setActiveActor(step.actorId, step.beforeUnits);
+            this.renderStep(step);
+            await this.playBattleStep(step, token);
+            if (!this.isCurrentRun(token)) return;
+            this.renderAll(step.actorId, step.turnEndUnits);
+            if (step.status === 'finished') break;
+            await this.delay(160);
         }
+        if (this.isCurrentRun(token) && this._flow.status === 'finished') this.finishBattle();
+    }
 
-        const step = this._flow.step();
-        this.renderAll(step.actorId);
-        this.renderStep(step);
-        if (step.status === 'finished') this.finishBattle();
+    private async playBattleStep(step: BattleStepResult, token: number): Promise<void> {
+        const isCurrent = () => this.isCurrentRun(token);
+        const actor = step.turnStartUnits.find((unit) => unit.id === step.actorId) ?? null;
+
+        this.renderAll(step.actorId, step.turnStartUnits);
+        if (step.turnStartLogs.length) {
+            this.setActionText(`${actor?.name ?? '单位'}的回合开始`, step.turnStartLogs);
+            await this._animationPlayer.playImpacts(
+                step.turnStartLogs, 'none', null, step.actorId, isCurrent,
+            );
+        }
+        if (!isCurrent()) return;
+
+        if (actor && step.skill) {
+            const { primaryLogs, reactionGroups } = this.splitActionLogs(step.actionLogs, actor.id);
+            let visualUnits = cloneBattleUnits(step.turnStartUnits);
+            const action = this._animationPlayer.playAction(
+                actor.id,
+                step.skill.kind === 'basic',
+                isCurrent,
+            );
+            await this.delay(165);
+            if (!isCurrent()) return;
+            visualUnits = this.applyVisualLogs(visualUnits, primaryLogs, step.actionUnits);
+            this.renderAll(step.actorId, visualUnits);
+            this.setActionText(`${actor.name} 施放【${step.skill.name}】`, primaryLogs);
+            const impact = this._animationPlayer.playImpacts(
+                primaryLogs,
+                step.skill.kind === 'basic' ? 'basic' : 'skill',
+                actor.configId,
+                actor.id,
+                isCurrent,
+            );
+            await Promise.all([action, impact]);
+
+            for (const reactionLogs of reactionGroups) {
+                if (!isCurrent()) return;
+                const sourceId = reactionLogs.find((log) => log.sourceUnitId)?.sourceUnitId ?? null;
+                const reactionSource = step.actionUnits.find((unit) => unit.id === sourceId) ?? null;
+                const hasCounterDamage = !!reactionSource && reactionLogs.some((log) => (
+                    log.type === 'damage'
+                    && log.sourceUnitId === reactionSource.id
+                    && log.targetUnitId === actor.id
+                    && (log.value ?? 0) > 0
+                ));
+                if (hasCounterDamage && reactionSource) {
+                    this.setActionText(`${reactionSource.name} 发起反击`, []);
+                    const counterAction = this._animationPlayer.playAction(
+                        reactionSource.id, true, isCurrent,
+                    );
+                    await this.delay(145);
+                    if (!isCurrent()) return;
+                    visualUnits = this.applyVisualLogs(visualUnits, reactionLogs, step.actionUnits);
+                    this.renderAll(step.actorId, visualUnits);
+                    this.setActionText(`${reactionSource.name} 发起反击`, reactionLogs);
+                    const counterImpact = this._animationPlayer.playImpacts(
+                        reactionLogs, 'basic', reactionSource.configId, actor.id, isCurrent,
+                    );
+                    await Promise.all([counterAction, counterImpact]);
+                }
+                else {
+                    visualUnits = this.applyVisualLogs(visualUnits, reactionLogs, step.actionUnits);
+                    this.renderAll(step.actorId, visualUnits);
+                    this.setActionText(`${reactionSource?.name ?? '单位'} 触发效果`, reactionLogs);
+                    await this._animationPlayer.playImpacts(
+                        reactionLogs, 'none', null, sourceId, isCurrent,
+                    );
+                }
+            }
+            this.renderAll(step.actorId, step.actionUnits);
+        }
+        else if (step.actionLogs.length) {
+            this.renderAll(step.actorId, step.actionUnits);
+            this.setActionText(`${actor?.name ?? '单位'} 触发效果`, step.actionLogs);
+            await this._animationPlayer.playImpacts(
+                step.actionLogs, 'none', null, step.actorId, isCurrent,
+            );
+        }
+        if (!isCurrent()) return;
+
+        this.renderAll(step.actorId, step.turnEndUnits);
+        if (step.turnEndLogs.length) {
+            this.setActionText(`${actor?.name ?? '单位'}的回合结束`, step.turnEndLogs);
+            await this._animationPlayer.playImpacts(
+                step.turnEndLogs, 'none', null, step.actorId, isCurrent,
+            );
+        }
     }
 
     private renderStep(step: BattleStepResult): void {
         if (this._roundLabel) this._roundLabel.string = `第 ${step.round} 回合`;
         const actor = this._flow.units.find((unit) => unit.id === step.actorId);
         const headline = actor && step.skill
-            ? `${actor.name} 施放【${step.skill.name}】`
+            ? `${actor.name} 准备施放【${step.skill.name}】`
             : actor
                 ? `${actor.name} 的回合`
                 : '回合推进';
-        this.setActionText(headline, step.logs);
+        this.setActionText(headline, []);
     }
 
     private finishBattle(): void {
-        this.unschedule(this.advanceBattle);
+        this.stopAutoBattle();
         if (!this._resultLayer || !this._resultLabel) return;
         this._resultLayer.active = true;
         const result = this._flow.winner === 'ally'
@@ -135,15 +248,20 @@ export class BattleMain extends Component {
     }
 
     private bindUnitSlots(): void {
-        const allyItems = findChild(this.node, 'bg/leftNode')?.children ?? [];
-        const enemyItems = findChild(this.node, 'bg/leftNode-001')?.children ?? [];
+        const allyItems = (findChild(this.node, 'bg/leftNode')?.children ?? [])
+            .filter((child) => child.name.startsWith('roleItem'));
+        const enemyItems = (findChild(this.node, 'bg/leftNode-001')?.children ?? [])
+            .filter((child) => child.name.startsWith('roleItem'));
+        if (allyItems.length < BATTLE_DEMO_ALLIES.length || enemyItems.length < BATTLE_DEMO_ENEMIES.length) {
+            warn(`[BattleMain] 战斗站位不足：角色${allyItems.length}个，怪物${enemyItems.length}个。`);
+        }
         this.createSlotViews(allyItems.slice(0, 5), 'ally');
         this.createSlotViews(enemyItems.slice(0, 5), 'enemy');
     }
 
     private createSlotViews(items: Node[], camp: BattleCamp): void {
         items.forEach((item, index) => {
-            const unitId = `${camp}_${camp === 'ally' ? index + 1 : index + 6}`;
+            const unitId = `${camp}_${index + 1}`;
             const overlay = new Node('battleInfo');
             overlay.layer = this.node.layer;
             overlay.setScale(camp === 'enemy' ? -1 : 1, 1, 1);
@@ -156,6 +274,7 @@ export class BattleMain extends Component {
 
             this._unitViews.set(unitId, {
                 item,
+                overlay,
                 icon: findChild(item, 'icon')?.getComponent(Sprite) ?? null,
                 hpBar: findChild(item, 'hp')?.getComponent(ProgressBar) ?? null,
                 nameLabel,
@@ -166,29 +285,53 @@ export class BattleMain extends Component {
         });
     }
 
-    private attachUnitsToViews(camp: BattleCamp, configs: readonly BattleDemoUnitConfig[]): void {
+    private attachUnitsToViews(
+        camp: BattleCamp,
+        configs: readonly BattleDemoUnitConfig[],
+        token: number,
+    ): Promise<void> {
         const units = this._flow.units.filter((unit) => unit.camp === camp);
+        const portraitLoads: Promise<void>[] = [];
         units.forEach((unit, index) => {
             const view = this._unitViews.get(unit.id);
             const config = configs[index];
             if (!view || !config) return;
             view.item.active = true;
-            resources.load(config.iconPath, SpriteFrame, (error, spriteFrame) => {
-                if (error || !spriteFrame) {
-                    warn(`[BattleMain] 角色图标加载失败：${config.iconPath}`);
-                    return;
-                }
-                if (view.icon?.isValid) view.icon.spriteFrame = spriteFrame;
-            });
+            if (view.icon) {
+                this._animationPlayer.bind(
+                    unit.id,
+                    unit.configId,
+                    unit.camp,
+                    view.item,
+                    view.overlay,
+                    view.icon,
+                );
+            }
+            portraitLoads.push(new Promise((resolve) => {
+                resources.load(config.iconPath, SpriteFrame, (error, spriteFrame) => {
+                    if (error || !spriteFrame) {
+                        warn(`[BattleMain] 角色图标加载失败：${config.iconPath}`);
+                        resolve();
+                        return;
+                    }
+                    if (this.isCurrentRun(token) && view.icon?.isValid) view.icon.spriteFrame = spriteFrame;
+                    resolve();
+                });
+            }));
         });
+        return Promise.all(portraitLoads).then(() => undefined);
     }
 
-    private renderAll(activeActorId: string | null): void {
-        for (const unit of this._flow.units) {
+    private renderAll(
+        activeActorId: string | null,
+        units: readonly BattleUnitState[] = this._flow.units,
+    ): void {
+        for (const unit of units) {
             const view = this._unitViews.get(unit.id);
             if (!view) continue;
             const hpRate = Math.max(0, unit.currentHp / unit.attributes.maxHp);
             if (view.hpBar) view.hpBar.progress = hpRate;
+            this._animationPlayer.setAlive(unit.id, unit.currentHp > 0);
             view.nameLabel.string = unit.name;
             view.hpLabel.string = `${Math.ceil(unit.currentHp)} / ${unit.attributes.maxHp}`;
             view.buffLabel.string = this.formatBuffs(unit);
@@ -273,6 +416,9 @@ export class BattleMain extends Component {
         this.createLabel(this._restartButton, 'Label', 0, 0, 220, 60, 30, Color.WHITE).string = '再次挑战';
         this._restartButton.on(Node.EventType.TOUCH_END, this.restartBattle, this);
         this._resultLayer.active = false;
+
+        // 返回按钮始终高于结算遮罩，保证战斗结束后仍可退出页面。
+        this._backButton?.setSiblingIndex(this.node.children.length - 1);
     }
 
     private createLabel(
@@ -299,6 +445,85 @@ export class BattleMain extends Component {
         label.enableWrapText = true;
         parent.addChild(node);
         return label;
+    }
+
+    private stopAutoBattle(): void {
+        this._runToken++;
+        this._loopRunning = false;
+        this._animationPlayer.reset();
+    }
+
+    private setActiveActor(
+        unitId: string | null,
+        units: readonly BattleUnitState[] = this._flow.units,
+    ): void {
+        for (const unit of units) {
+            const view = this._unitViews.get(unit.id);
+            if (!view) continue;
+            view.turnLabel.string = unit.currentHp <= 0
+                ? '已阵亡'
+                : unit.id === unitId ? '◆ 行动中 ◆' : '';
+        }
+    }
+
+    private splitActionLogs(
+        logs: readonly BattleLogEntry[],
+        actorId: string,
+    ): { primaryLogs: BattleLogEntry[]; reactionGroups: BattleLogEntry[][] } {
+        const primaryLogs: BattleLogEntry[] = [];
+        const reactionBySource = new Map<string, BattleLogEntry[]>();
+        for (const log of logs) {
+            const sourceId = log.sourceUnitId;
+            if (!sourceId || sourceId === actorId) {
+                primaryLogs.push(log);
+                continue;
+            }
+            const group = reactionBySource.get(sourceId) ?? [];
+            group.push(log);
+            reactionBySource.set(sourceId, group);
+        }
+        return { primaryLogs, reactionGroups: Array.from(reactionBySource.values()) };
+    }
+
+    /** 根据本段日志推进展示快照，最终权威状态仍以 FlowController 的阶段快照为准。 */
+    private applyVisualLogs(
+        units: readonly BattleUnitState[],
+        logs: readonly BattleLogEntry[],
+        authoritativeUnits: readonly BattleUnitState[],
+    ): BattleUnitState[] {
+        const result = cloneBattleUnits(units);
+        for (const log of logs) {
+            const unit = result.find((item) => item.id === log.targetUnitId);
+            if (!unit) continue;
+            const value = Math.max(0, log.value ?? 0);
+            if (log.type === 'damage') unit.currentHp = Math.max(0, unit.currentHp - value);
+            if (log.type === 'heal') {
+                unit.currentHp = Math.min(unit.attributes.maxHp, unit.currentHp + value);
+            }
+            if ((log.type === 'buffApplied' || log.type === 'shield') && log.buffId) {
+                const authoritative = authoritativeUnits
+                    .find((item) => item.id === unit.id)
+                    ?.buffs.find((buff) => buff.buffId === log.buffId);
+                if (authoritative) {
+                    const index = unit.buffs.findIndex((buff) => buff.buffId === log.buffId);
+                    if (index >= 0) unit.buffs[index] = { ...authoritative };
+                    else unit.buffs.push({ ...authoritative });
+                }
+            }
+            if (log.type === 'buffRemoved' && log.buffId) {
+                unit.buffs = unit.buffs.filter((buff) => buff.buffId !== log.buffId);
+            }
+            if (log.type === 'defeated') unit.currentHp = 0;
+        }
+        return result;
+    }
+
+    private isCurrentRun(token: number): boolean {
+        return token === this._runToken && this.isValid && this.node.activeInHierarchy;
+    }
+
+    private delay(milliseconds: number): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, milliseconds));
     }
 
     private onBack(): void {

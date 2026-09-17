@@ -82,7 +82,7 @@ export const BATTLE_DEMO_ENEMIES: readonly BattleDemoUnitConfig[] = [
         camp: 'enemy',
         iconPath: 'gui/common/roleIcon/monster_15_blackwater_tortoise_king/spriteFrame',
         // 演示关降低 Boss 面板，保证自动战斗能在回合上限前完整走到击败结算。
-        attributes: { maxHp: 5000, attack: 640, defense: 250, speed: 79, critRate: 0.08 },
+        attributes: { maxHp: 4500, attack: 640, defense: 220, speed: 79, critRate: 0.08 },
     },
 ];
 

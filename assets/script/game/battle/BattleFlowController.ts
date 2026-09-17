@@ -16,9 +16,27 @@ export interface BattleStepResult {
     round: number;
     actorId: string | null;
     skill: BattleSkillConfig | null;
+    /** 本次行动开始前，以及三个结算阶段结束后的只读状态快照。 */
+    beforeUnits: BattleUnitState[];
+    turnStartUnits: BattleUnitState[];
+    actionUnits: BattleUnitState[];
+    turnEndUnits: BattleUnitState[];
+    turnStartLogs: BattleLogEntry[];
+    actionLogs: BattleLogEntry[];
+    turnEndLogs: BattleLogEntry[];
     logs: BattleLogEntry[];
     status: BattleFlowStatus;
     winner: BattleWinner;
+}
+
+/** UI 播放过程中不能直接读取已结算到回合末的实时对象，因此统一生成深拷贝快照。 */
+export function cloneBattleUnits(units: readonly BattleUnitState[]): BattleUnitState[] {
+    return units.map((unit) => ({
+        ...unit,
+        attributes: { ...unit.attributes },
+        buffs: unit.buffs.map((buff) => ({ ...buff })),
+        triggeredPassives: [...unit.triggeredPassives],
+    }));
 }
 
 /**
@@ -47,13 +65,17 @@ export class BattleFlowController {
         this.winner = null;
         this._turnQueue.length = 0;
         this._cooldowns.clear();
-        this.units = roster.map((config, index) => this.engine.createUnit(
-            `${config.camp}_${index + 1}`,
-            config.configId,
-            config.name,
-            config.camp,
-            config.attributes,
-        ));
+        const campSequence: Record<BattleCamp, number> = { ally: 0, enemy: 0 };
+        this.units = roster.map((config) => {
+            const campIndex = ++campSequence[config.camp];
+            return this.engine.createUnit(
+                `${config.camp}_${campIndex}`,
+                config.configId,
+                config.name,
+                config.camp,
+                config.attributes,
+            );
+        });
 
         for (const unit of this.units) this._cooldowns.set(unit.id, new Map<string, number>());
         const logs = this.engine.initializeBattle(this.units);
@@ -66,6 +88,7 @@ export class BattleFlowController {
         if (!this._turnQueue.length) this.beginRound();
         if (this.status !== 'running') return this.emptyStep();
 
+        const beforeUnits = cloneBattleUnits(this.units);
         const actorId = this._turnQueue.shift() ?? null;
         const actor = this.units.find((unit) => unit.id === actorId);
         if (!actor || actor.currentHp <= 0) {
@@ -75,15 +98,18 @@ export class BattleFlowController {
 
         this.reduceCooldowns(actor.id);
         const turnStart = this.engine.resolveTurnStart(actor.id, this.units);
-        const logs = [...turnStart.logs];
+        const turnStartLogs = [...turnStart.logs];
+        const actionLogs: BattleLogEntry[] = [];
+        const turnEndLogs: BattleLogEntry[] = [];
         this.resolveWinner();
+        const turnStartUnits = cloneBattleUnits(this.units);
 
         let skill: BattleSkillConfig | null = null;
         if (this.status === 'running' && turnStart.canAct) {
             skill = this.selectSkill(actor, turnStart.canCastActiveSkill);
             if (skill) {
                 const target = this.selectPrimaryTarget(actor.camp);
-                logs.push(...this.engine.executeSkill(skill.id, actor.id, this.units, {
+                actionLogs.push(...this.engine.executeSkill(skill.id, actor.id, this.units, {
                     primaryTargetId: target?.id,
                 }));
                 if (skill.cooldown > 0) {
@@ -94,15 +120,26 @@ export class BattleFlowController {
         }
 
         this.resolveWinner();
+        const actionUnits = cloneBattleUnits(this.units);
         if (this.status === 'running' && actor.currentHp > 0) {
-            logs.push(...this.engine.resolveTurnEnd(actor.id, this.units));
+            turnEndLogs.push(...this.engine.resolveTurnEnd(actor.id, this.units));
             this.resolveWinner();
         }
+        const turnEndUnits = cloneBattleUnits(this.units);
+
+        const logs = [...turnStartLogs, ...actionLogs, ...turnEndLogs];
 
         return {
             round: this.round,
             actorId: actor.id,
             skill,
+            beforeUnits,
+            turnStartUnits,
+            actionUnits,
+            turnEndUnits,
+            turnStartLogs,
+            actionLogs,
+            turnEndLogs,
             logs,
             status: this.status,
             winner: this.winner,
@@ -172,10 +209,18 @@ export class BattleFlowController {
     }
 
     private emptyStep(): BattleStepResult {
+        const units = cloneBattleUnits(this.units);
         return {
             round: this.round,
             actorId: null,
             skill: null,
+            beforeUnits: cloneBattleUnits(units),
+            turnStartUnits: cloneBattleUnits(units),
+            actionUnits: cloneBattleUnits(units),
+            turnEndUnits: units,
+            turnStartLogs: [],
+            actionLogs: [],
+            turnEndLogs: [],
             logs: [],
             status: this.status,
             winner: this.winner,
