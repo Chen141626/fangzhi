@@ -12,6 +12,7 @@ export enum UIID {
     ImmortalFateEncounter = 8,
     GrowthFund = 9,
     CumulativeRechargeRewards = 10,
+    Battle = 11,
 }
 
 /** 路径相对于对应的 Asset Bundle，关闭时保留页面供下次复用。 */
@@ -32,6 +33,7 @@ export const UIConfigData: Record<number, UIConfig> = {
     [UIID.ImmortalFateEncounter]: popupConfig('immortalFateEncounter'),
     [UIID.GrowthFund]: popupConfig('growthFund'),
     [UIID.CumulativeRechargeRewards]: popupConfig('cumulativeRechargeRewards'),
+    [UIID.Battle]: { layer: LayerType.UI, bundle: 'battle', prefab: 'prefab/battle', destroy: false },
 };
 
 function popupConfig(prefab: string): UIConfig {

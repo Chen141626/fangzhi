@@ -20,6 +20,7 @@ function findChild(root: Node, path: string): Node | null {
 @menu('Game/Main/MainMain')
 export class MainMain extends Component {
     private _roleButton: Node | null = null;
+    private _battleButton: Node | null = null;
     private readonly _popupBindings: Array<{
         node: Node;
         handler: () => void;
@@ -34,6 +35,14 @@ export class MainMain extends Component {
             this._roleButton.on(Node.EventType.TOUCH_END, this.openRole, this);
         }
 
+        this._battleButton = findChild(this.node, 'bg/bottom/btn_battle');
+        if (!this._battleButton) {
+            warn('[MainMain] 找不到战斗按钮：bg/bottom/btn_battle');
+        }
+        else {
+            this._battleButton.on(Node.EventType.TOUCH_END, this.openBattle, this);
+        }
+
         this.bindPopup('bg/leftBtn/btn_daily_gift', UIID.DailyWelfare, '每日福利');
         this.bindPopup('bg/leftBtn/btn_limited', UIID.LimitedTimeEvents, '限时活动');
         this.bindPopup('bg/leftBtn/btn_server_rank', UIID.ServerOpeningRanking, '开服冲榜');
@@ -46,6 +55,7 @@ export class MainMain extends Component {
 
     protected onDestroy(): void {
         this._roleButton?.off(Node.EventType.TOUCH_END, this.openRole, this);
+        this._battleButton?.off(Node.EventType.TOUCH_END, this.openBattle, this);
         for (const binding of this._popupBindings) {
             binding.node.off(Node.EventType.TOUCH_END, binding.handler, this);
         }
@@ -58,6 +68,14 @@ export class MainMain extends Component {
         if (oops.gui.has(UIID.Role)) return;
         oops.gui.open(UIID.Role, null, {
             onLoadFailure: () => warn('[MainMain] 角色界面加载失败，请重新点击角色按钮。'),
+        });
+    }
+
+    /** 打开固定 5v5 演示战斗。 */
+    openBattle(): void {
+        if (oops.gui.has(UIID.Battle)) return;
+        oops.gui.open(UIID.Battle, null, {
+            onLoadFailure: () => warn('[MainMain] 战斗界面加载失败，请检查 battle bundle。'),
         });
     }
 
