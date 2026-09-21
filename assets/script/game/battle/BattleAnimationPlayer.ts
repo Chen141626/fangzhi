@@ -72,6 +72,16 @@ export class BattleAnimationPlayer {
     private _commonHitFrames: SpriteFrame[] = [];
     private _idleElapsed = 0;
     private _idleIndex = 0;
+    private _playbackSpeed = 1;
+    private _paused = false;
+
+    setPlaybackSpeed(speed: number): void {
+        this._playbackSpeed = Math.max(0.25, Math.min(4, Number.isFinite(speed) ? speed : 1));
+    }
+
+    setPaused(paused: boolean): void {
+        this._paused = paused;
+    }
 
     bind(
         unitId: string,
@@ -180,7 +190,8 @@ export class BattleAnimationPlayer {
     }
 
     update(deltaTime: number): void {
-        this._idleElapsed += deltaTime;
+        if (this._paused) return;
+        this._idleElapsed += deltaTime * this._playbackSpeed;
         if (this._idleElapsed < 0.2) return;
         this._idleElapsed %= 0.2;
         this._idleIndex = (this._idleIndex + 1) % IDLE_FRAME_COUNT;
@@ -668,6 +679,17 @@ export class BattleAnimationPlayer {
     }
 
     private delay(milliseconds: number): Promise<void> {
-        return new Promise((resolve) => setTimeout(resolve, milliseconds));
+        return new Promise((resolve) => {
+            let remaining = Math.max(0, milliseconds);
+            let previous = Date.now();
+            const tick = () => {
+                const current = Date.now();
+                if (!this._paused) remaining -= (current - previous) * this._playbackSpeed;
+                previous = current;
+                if (remaining <= 0) resolve();
+                else setTimeout(tick, Math.min(16, remaining / this._playbackSpeed));
+            };
+            tick();
+        });
     }
 }

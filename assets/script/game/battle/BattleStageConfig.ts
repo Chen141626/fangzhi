@@ -1,4 +1,4 @@
-import { ItemAmount } from '../item/ItemService';
+import type { ItemAmount } from '../item/ItemService';
 import { BattleAttributes } from './BattleEffectTypes';
 import { BattleUnitAnimationConfig, validateBattleAnimationConfig } from './BattleAnimationConfig';
 import { BattleUnitConfig } from './BattleDemoConfig';

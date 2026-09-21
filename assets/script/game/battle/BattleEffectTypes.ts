@@ -108,6 +108,9 @@ export interface BattleUnitState {
     camp: BattleCamp;
     attributes: BattleAttributes;
     currentHp: number;
+    /** 绝技资源；普攻、主动技和受击都会回复，满值后才可释放绝技。 */
+    energy: number;
+    maxEnergy: number;
     buffs: AppliedBattleBuff[];
     /** 每场战斗只触发一次的被动技能 ID。 */
     triggeredPassives: string[];
@@ -217,4 +220,3 @@ export interface BattleLogEntry {
     value?: number;
     message: string;
 }
-

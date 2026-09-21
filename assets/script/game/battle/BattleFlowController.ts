@@ -29,6 +29,26 @@ export interface BattleStepResult {
     winner: BattleWinner;
 }
 
+export interface BattleActionDecision {
+    skillId?: string;
+    targetId?: string;
+}
+
+export interface BattleSkillState {
+    skill: BattleSkillConfig;
+    cooldown: number;
+    available: boolean;
+    reason: '' | 'cooldown' | 'energy';
+}
+
+export interface BattleTurnPreview {
+    round: number;
+    actor: BattleUnitState;
+    skills: BattleSkillState[];
+    targets: BattleUnitState[];
+    upcomingUnitIds: string[];
+}
+
 /** UI 播放过程中不能直接读取已结算到回合末的实时对象，因此统一生成深拷贝快照。 */
 export function cloneBattleUnits(units: readonly BattleUnitState[]): BattleUnitState[] {
     return units.map((unit) => ({
@@ -95,7 +115,33 @@ export class BattleFlowController {
         return { round: this.round, logs, status: this.status };
     }
 
-    step(): BattleStepResult {
+    /** 为手动操作和行动条准备下一位行动者；不会结算该单位的回合。 */
+    previewNextTurn(): BattleTurnPreview | null {
+        if (this.status !== 'running') return null;
+        if (!this._turnQueue.length) this.beginRound();
+        while (this._turnQueue.length) {
+            const actor = this.units.find((unit) => unit.id === this._turnQueue[0]);
+            if (actor && actor.currentHp > 0) {
+                return {
+                    round: this.round,
+                    actor: cloneBattleUnits([actor])[0],
+                    skills: this.getSkillStates(actor, true),
+                    targets: cloneBattleUnits(this.getLivingEnemies(actor.camp)),
+                    upcomingUnitIds: this.getUpcomingUnitIds(),
+                };
+            }
+            this._turnQueue.shift();
+        }
+        return this.previewNextTurn();
+    }
+
+    getUpcomingUnitIds(limit = 6): string[] {
+        return this._turnQueue
+            .filter((id) => (this.units.find((unit) => unit.id === id)?.currentHp ?? 0) > 0)
+            .slice(0, Math.max(0, limit));
+    }
+
+    step(decision: BattleActionDecision = {}): BattleStepResult {
         if (this.status !== 'running') return this.emptyStep();
         if (!this._turnQueue.length) this.beginRound();
         if (this.status !== 'running') return this.emptyStep();
@@ -118,12 +164,24 @@ export class BattleFlowController {
 
         let skill: BattleSkillConfig | null = null;
         if (this.status === 'running' && turnStart.canAct) {
-            skill = this.selectSkill(actor, turnStart.canCastActiveSkill);
+            skill = this.selectSkill(actor, turnStart.canCastActiveSkill, decision.skillId);
             if (skill) {
-                const target = this.selectPrimaryTarget(actor.camp);
+                const target = this.selectPrimaryTarget(actor.camp, decision.targetId);
                 actionLogs.push(...this.engine.executeSkill(skill.id, actor.id, this.units, {
                     primaryTargetId: target?.id,
                 }));
+                actor.energy = skill.kind === 'ultimate'
+                    ? 0
+                    : Math.min(actor.maxEnergy, actor.energy + (skill.kind === 'basic' ? 30 : 20));
+                const damagedIds = new Set(actionLogs
+                    .filter((log) => log.type === 'damage' && (log.value ?? 0) > 0)
+                    .map((log) => log.targetUnitId));
+                for (const targetId of damagedIds) {
+                    const damaged = this.units.find((unit) => unit.id === targetId);
+                    if (damaged?.currentHp && damaged.id !== actor.id) {
+                        damaged.energy = Math.min(damaged.maxEnergy, damaged.energy + 10);
+                    }
+                }
                 if (skill.cooldown > 0) {
                     // 回合开始会先减1，因此多存1可确保完整等待配置的冷却回合。
                     this._cooldowns.get(actor.id)?.set(skill.id, skill.cooldown + 1);
@@ -173,19 +231,46 @@ export class BattleFlowController {
             .map((unit) => unit.id);
     }
 
-    private selectSkill(unit: BattleUnitState, canCastActiveSkill: boolean): BattleSkillConfig | null {
-        const cooldowns = this._cooldowns.get(unit.id);
-        const available = getUnitBattleSkills(unit.configId)
-            .filter((skill) => skill.kind !== 'passive')
-            .filter((skill) => canCastActiveSkill || skill.kind === 'basic')
-            .filter((skill) => (cooldowns?.get(skill.id) ?? 0) <= 0)
-            .sort((a, b) => b.slot - a.slot);
-        return available[0] ?? null;
+    private selectSkill(
+        unit: BattleUnitState,
+        canCastActiveSkill: boolean,
+        preferredSkillId?: string,
+    ): BattleSkillConfig | null {
+        const available = this.getSkillStates(unit, false)
+            .filter((state) => state.available)
+            .map((state) => state.skill)
+            .filter((skill) => canCastActiveSkill || skill.kind === 'basic');
+        const preferred = available.find((skill) => skill.id === preferredSkillId);
+        return preferred ?? available.sort((a, b) => b.slot - a.slot)[0] ?? null;
     }
 
-    private selectPrimaryTarget(camp: BattleCamp): BattleUnitState | null {
-        return this.units
-            .filter((unit) => unit.camp !== camp && unit.currentHp > 0)
+    private getSkillStates(unit: BattleUnitState, beforeTurnStart: boolean): BattleSkillState[] {
+        const cooldowns = this._cooldowns.get(unit.id);
+        return getUnitBattleSkills(unit.configId)
+            .filter((skill) => skill.kind !== 'passive')
+            .sort((a, b) => a.slot - b.slot)
+            .map((skill) => {
+                const stored = cooldowns?.get(skill.id) ?? 0;
+                const cooldown = beforeTurnStart ? Math.max(0, stored - 1) : stored;
+                const lacksEnergy = skill.kind === 'ultimate' && unit.energy < unit.maxEnergy;
+                return {
+                    skill,
+                    cooldown,
+                    available: cooldown <= 0 && !lacksEnergy,
+                    reason: cooldown > 0 ? 'cooldown' : lacksEnergy ? 'energy' : '',
+                };
+            });
+    }
+
+    private getLivingEnemies(camp: BattleCamp): BattleUnitState[] {
+        return this.units.filter((unit) => unit.camp !== camp && unit.currentHp > 0);
+    }
+
+    private selectPrimaryTarget(camp: BattleCamp, preferredTargetId?: string): BattleUnitState | null {
+        const enemies = this.getLivingEnemies(camp);
+        const preferred = enemies.find((unit) => unit.id === preferredTargetId);
+        if (preferred) return preferred;
+        return enemies
             .sort((a, b) => (
                 a.currentHp / a.attributes.maxHp - b.currentHp / b.attributes.maxHp
                 || a.currentHp - b.currentHp

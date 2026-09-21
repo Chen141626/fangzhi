@@ -24,7 +24,13 @@ import {
     BattleUnitConfig,
     validateBattleDemoConfig,
 } from './BattleDemoConfig';
-import { BattleFlowController, BattleStepResult, cloneBattleUnits } from './BattleFlowController';
+import {
+    BattleActionDecision,
+    BattleFlowController,
+    BattleStepResult,
+    BattleTurnPreview,
+    cloneBattleUnits,
+} from './BattleFlowController';
 import { BattleCamp, BattleLogEntry, BattleUnitState } from './BattleEffectTypes';
 import {
     BattleOpenArgs,
@@ -44,6 +50,7 @@ interface BattleUnitView {
     hpBar: ProgressBar | null;
     nameLabel: Label;
     hpLabel: Label;
+    energyLabel: Label;
     buffLabel: Label;
     turnLabel: Label;
 }
@@ -116,6 +123,21 @@ export class BattleMain extends Component {
     private _previewSequenceButton: Node | null = null;
     private _previewSequenceLabel: Label | null = null;
     private _previewReplayButton: Node | null = null;
+    private _controlPanel: Node | null = null;
+    private _autoButton: RuntimeButton | null = null;
+    private _pauseButton: RuntimeButton | null = null;
+    private _speedButton: RuntimeButton | null = null;
+    private _skipButton: RuntimeButton | null = null;
+    private _turnOrderLabel: Label | null = null;
+    private _manualPanel: Node | null = null;
+    private _manualTargetButton: RuntimeButton | null = null;
+    private readonly _manualSkillButtons: RuntimeButton[] = [];
+    private _manualPreview: BattleTurnPreview | null = null;
+    private _manualTargetIndex = 0;
+    private _manualResolver: ((decision: BattleActionDecision) => void) | null = null;
+    private _autoMode = true;
+    private _paused = false;
+    private _playbackSpeed = 1;
     private _animationPreviewActive = false;
     private _previewUnitIndex = 0;
     private _previewSequenceIndex = 0;
@@ -165,10 +187,14 @@ export class BattleMain extends Component {
         this._previewUnitButton?.off(Node.EventType.TOUCH_END, this.onPreviewUnitSwitch, this);
         this._previewSequenceButton?.off(Node.EventType.TOUCH_END, this.onPreviewSequenceSwitch, this);
         this._previewReplayButton?.off(Node.EventType.TOUCH_END, this.onPreviewReplay, this);
+        this.cancelManualDecision();
     }
 
     /** 使用当前玩家阵容和关卡配置重新开战，也供结果面板按钮调用。 */
     restartBattle(): void {
+        this.cancelManualDecision();
+        this._paused = false;
+        this._animationPlayer.setPaused(false);
         this._animationPreviewActive = false;
         this._previewToken++;
         if (this._animationPreviewPanel) this._animationPreviewPanel.active = false;
@@ -186,6 +212,7 @@ export class BattleMain extends Component {
         }
         this._battleId = nextBattleId(this._session.stage.id);
         this._settlement = null;
+        this.refreshControlLabels();
         for (const view of this._unitViews.values()) view.item.active = false;
         const startResult = this._flow.start(this._session.roster, this._session.stage.maxRounds);
         const portraitLoading = Promise.all([
@@ -210,7 +237,7 @@ export class BattleMain extends Component {
         const enemyCount = this._session?.enemies.length ?? 0;
         const source = this._session?.usingFallbackAllies ? '体验阵容' : '玩家阵容';
         if (this._stateLabel) {
-            this._stateLabel.string = `自动战斗 · ${allyCount} vs ${enemyCount} · ${source}`;
+            this._stateLabel.string = `${this._autoMode ? '自动' : '手动'}战斗 · ${allyCount} vs ${enemyCount} · ${source}`;
         }
         await this.delay(350);
         if (!this.isCurrentRun(token)) return;
@@ -221,7 +248,17 @@ export class BattleMain extends Component {
         if (this._loopRunning || !this.isCurrentRun(token)) return;
         this._loopRunning = true;
         while (this.isCurrentRun(token) && this._flow.status === 'running') {
-            const step = this._flow.step();
+            await this.waitWhilePaused(token);
+            if (!this.isCurrentRun(token)) return;
+            const preview = this._flow.previewNextTurn();
+            if (!preview) break;
+            this.renderTurnOrder(preview);
+            let decision: BattleActionDecision = {};
+            if (!this._autoMode && preview.actor.camp === 'ally') {
+                decision = await this.requestManualDecision(preview, token);
+            }
+            if (!this.isCurrentRun(token)) return;
+            const step = this._flow.step(decision);
             this.setActiveActor(step.actorId, step.beforeUnits);
             this.renderStep(step);
             await this.playBattleStep(step, token);
@@ -396,6 +433,9 @@ export class BattleMain extends Component {
     private createSlotViews(items: Node[], camp: BattleCamp): void {
         items.forEach((item, index) => {
             const unitId = `${camp}_${index + 1}`;
+            if (camp === 'enemy') {
+                item.on(Node.EventType.TOUCH_END, () => this.selectManualTarget(unitId), this);
+            }
             const overlay = new Node('battleInfo');
             overlay.layer = this.node.layer;
             overlay.setScale(camp === 'enemy' ? -1 : 1, 1, 1);
@@ -403,6 +443,7 @@ export class BattleMain extends Component {
 
             const nameLabel = this.createLabel(overlay, 'name', 0, 188, 230, 34, 24, new Color(255, 244, 192));
             const hpLabel = this.createLabel(overlay, 'hpText', 22, 139, 190, 24, 18, Color.WHITE);
+            const energyLabel = this.createLabel(overlay, 'energyText', 22, 118, 190, 20, 15, new Color(255, 211, 82));
             const buffLabel = this.createLabel(overlay, 'buffs', 0, 103, 260, 50, 17, new Color(174, 235, 255));
             const turnLabel = this.createLabel(overlay, 'turnMark', 0, 225, 190, 28, 20, new Color(255, 214, 77));
 
@@ -413,6 +454,7 @@ export class BattleMain extends Component {
                 hpBar: findChild(item, 'hp')?.getComponent(ProgressBar) ?? null,
                 nameLabel,
                 hpLabel,
+                energyLabel,
                 buffLabel,
                 turnLabel,
             });
@@ -469,6 +511,7 @@ export class BattleMain extends Component {
             this._animationPlayer.setAlive(unit.id, unit.currentHp > 0);
             view.nameLabel.string = unit.name;
             view.hpLabel.string = `${Math.ceil(unit.currentHp)} / ${unit.attributes.maxHp}`;
+            view.energyLabel.string = `怒气 ${Math.round(unit.energy)} / ${unit.maxEnergy}`;
             view.buffLabel.string = this.formatBuffs(unit);
             view.turnLabel.string = unit.currentHp <= 0
                 ? '已阵亡'
@@ -549,6 +592,55 @@ export class BattleMain extends Component {
         this._previewReplayButton = replayButton.node;
         replayButton.node.on(Node.EventType.TOUCH_END, this.onPreviewReplay, this);
         this._animationPreviewPanel.active = false;
+
+        this._controlPanel = new Node('battleControlPanel');
+        this._controlPanel.layer = this.node.layer;
+        runtime.addChild(this._controlPanel);
+        this._autoButton = this.createRuntimeButton(
+            this._controlPanel, 'btn_auto', -240, 610, 135, 52, '自动', new Color(56, 113, 166, 245),
+        );
+        this._pauseButton = this.createRuntimeButton(
+            this._controlPanel, 'btn_pause', -80, 610, 135, 52, '暂停', new Color(87, 91, 128, 245),
+        );
+        this._speedButton = this.createRuntimeButton(
+            this._controlPanel, 'btn_speed', 80, 610, 135, 52, '1 倍速', new Color(111, 83, 42, 245),
+        );
+        this._skipButton = this.createRuntimeButton(
+            this._controlPanel, 'btn_skip', 240, 610, 135, 52, '跳过', new Color(126, 65, 65, 245),
+        );
+        this._autoButton.node.on(Node.EventType.TOUCH_END, this.onAutoToggle, this);
+        this._pauseButton.node.on(Node.EventType.TOUCH_END, this.onPauseToggle, this);
+        this._speedButton.node.on(Node.EventType.TOUCH_END, this.onSpeedToggle, this);
+        this._skipButton.node.on(Node.EventType.TOUCH_END, this.onSkipBattle, this);
+        this._turnOrderLabel = this.createLabel(
+            this._controlPanel, 'turnOrder', 0, 558, 680, 34, 19, new Color(202, 222, 255),
+        );
+        this._turnOrderLabel.string = '行动顺序：准备中';
+
+        this._manualPanel = new Node('manualActionPanel');
+        this._manualPanel.layer = this.node.layer;
+        this._manualPanel.setPosition(0, -525);
+        this._manualPanel.addComponent(UITransform).setContentSize(700, 100);
+        this._manualPanel.addComponent(BlockInputEvents);
+        const manualGraphics = this._manualPanel.addComponent(Graphics);
+        manualGraphics.fillColor = new Color(12, 27, 48, 240);
+        manualGraphics.roundRect(-350, -50, 700, 100, 18);
+        manualGraphics.fill();
+        runtime.addChild(this._manualPanel);
+        this._manualTargetButton = this.createRuntimeButton(
+            this._manualPanel, 'btn_manual_target', -270, 0, 130, 66,
+            '目标', new Color(118, 63, 66, 255),
+        );
+        this._manualTargetButton.node.on(Node.EventType.TOUCH_END, this.onManualTargetSwitch, this);
+        [-105, 75, 255].forEach((x, index) => {
+            const button = this.createRuntimeButton(
+                this._manualPanel!, `btn_manual_skill_${index + 1}`, x, 0, 160, 66,
+                `技能${index + 1}`, new Color(45, 103, 143, 255),
+            );
+            button.node.on(Node.EventType.TOUCH_END, () => this.onManualSkill(index), this);
+            this._manualSkillButtons.push(button);
+        });
+        this._manualPanel.active = false;
 
         const actionPanel = new Node('actionPanel');
         actionPanel.layer = this.node.layer;
@@ -674,6 +766,157 @@ export class BattleMain extends Component {
         void this.playCurrentAnimationPreview();
     }
 
+    private onAutoToggle(): void {
+        this._autoMode = !this._autoMode;
+        if (this._autoMode && this._manualResolver) {
+            this.resolveManualDecision({});
+        }
+        this.refreshControlLabels();
+        if (this._stateLabel && this._flow.status === 'running') {
+            this._stateLabel.string = `${this._autoMode ? '自动' : '手动'}战斗 · ${this._playbackSpeed}倍速`;
+        }
+    }
+
+    private onPauseToggle(): void {
+        if (this._flow.status !== 'running' || this._animationPreviewActive) return;
+        this._paused = !this._paused;
+        this._animationPlayer.setPaused(this._paused);
+        this.refreshControlLabels();
+        if (this._stateLabel) this._stateLabel.string = this._paused ? '战斗已暂停' : '战斗进行中';
+    }
+
+    private onSpeedToggle(): void {
+        this._playbackSpeed = this._playbackSpeed === 1 ? 2 : this._playbackSpeed === 2 ? 4 : 1;
+        this._animationPlayer.setPlaybackSpeed(this._playbackSpeed);
+        this.refreshControlLabels();
+    }
+
+    private onSkipBattle(): void {
+        if (this._flow.status !== 'running' || this._animationPreviewActive) return;
+        this.cancelManualDecision();
+        this.stopAutoBattle(false);
+        let guard = 0;
+        while (this._flow.status === 'running' && guard++ < 1000) this._flow.step();
+        this.renderAll(null);
+        this.finishBattle();
+    }
+
+    private onManualTargetSwitch(): void {
+        const targets = this._manualPreview?.targets ?? [];
+        if (!targets.length) return;
+        this._manualTargetIndex = (this._manualTargetIndex + 1) % targets.length;
+        this.refreshManualPanel();
+    }
+
+    private selectManualTarget(unitId: string): void {
+        const preview = this._manualPreview;
+        if (!preview || !this._manualResolver) return;
+        const index = preview.targets.findIndex((unit) => unit.id === unitId);
+        if (index < 0) return;
+        this._manualTargetIndex = index;
+        this.refreshManualPanel();
+    }
+
+    private onManualSkill(index: number): void {
+        const preview = this._manualPreview;
+        const state = preview?.skills[index];
+        if (!preview || !state || !this._manualResolver) return;
+        if (!state.available) {
+            const reason = state.reason === 'energy'
+                ? '怒气未满'
+                : `冷却剩余 ${state.cooldown} 回合`;
+            this.setActionText(`【${state.skill.name}】暂不可用`, [{
+                type: 'skipTurn',
+                targetUnitId: preview.actor.id,
+                message: reason,
+            }]);
+            return;
+        }
+        const target = preview.targets[this._manualTargetIndex];
+        this.resolveManualDecision({ skillId: state.skill.id, targetId: target?.id });
+    }
+
+    private requestManualDecision(
+        preview: BattleTurnPreview,
+        token: number,
+    ): Promise<BattleActionDecision> {
+        if (!this.isCurrentRun(token)) return Promise.resolve({});
+        this._manualPreview = preview;
+        this._manualTargetIndex = Math.max(0, preview.targets.findIndex((unit) => (
+            unit.currentHp / unit.attributes.maxHp
+            === Math.min(...preview.targets.map((item) => item.currentHp / item.attributes.maxHp))
+        )));
+        if (this._manualPanel) this._manualPanel.active = true;
+        this.refreshManualPanel();
+        this.setActionText(`${preview.actor.name}：请选择技能和目标`, []);
+        return new Promise((resolve) => {
+            this._manualResolver = resolve;
+        });
+    }
+
+    private resolveManualDecision(decision: BattleActionDecision): void {
+        const resolve = this._manualResolver;
+        this._manualResolver = null;
+        this._manualPreview = null;
+        if (this._manualPanel) this._manualPanel.active = false;
+        resolve?.(decision);
+    }
+
+    private cancelManualDecision(): void {
+        this.resolveManualDecision({});
+    }
+
+    private refreshManualPanel(): void {
+        const preview = this._manualPreview;
+        if (!preview) return;
+        const target = preview.targets[this._manualTargetIndex];
+        if (this._manualTargetButton) {
+            this._manualTargetButton.label.string = `目标\n${target?.name ?? '无'}`;
+        }
+        for (const unit of this._flow.units) {
+            const view = this._unitViews.get(unit.id);
+            if (!view) continue;
+            view.turnLabel.string = unit.currentHp <= 0
+                ? '已阵亡'
+                : unit.id === preview.actor.id
+                    ? '◆ 选择技能 ◆'
+                    : unit.id === target?.id ? '◎ 当前目标 ◎' : '';
+        }
+        this._manualSkillButtons.forEach((button, index) => {
+            const state = preview.skills[index];
+            if (!state) {
+                button.node.active = false;
+                return;
+            }
+            button.node.active = true;
+            const suffix = state.available
+                ? state.skill.kind === 'ultimate' ? '满怒' : '可用'
+                : state.reason === 'energy' ? `${preview.actor.energy}/${preview.actor.maxEnergy}` : `冷却${state.cooldown}`;
+            button.label.string = `${state.skill.name}\n${suffix}`;
+            button.label.color = state.available ? Color.WHITE : new Color(158, 165, 176);
+        });
+    }
+
+    private refreshControlLabels(): void {
+        if (this._autoButton) this._autoButton.label.string = this._autoMode ? '自动' : '手动';
+        if (this._pauseButton) this._pauseButton.label.string = this._paused ? '继续' : '暂停';
+        if (this._speedButton) this._speedButton.label.string = `${this._playbackSpeed} 倍速`;
+    }
+
+    private renderTurnOrder(preview: BattleTurnPreview): void {
+        if (!this._turnOrderLabel) return;
+        const names = preview.upcomingUnitIds
+            .map((id) => this._flow.units.find((unit) => unit.id === id)?.name)
+            .filter((name): name is string => !!name);
+        this._turnOrderLabel.string = `行动顺序：${names.join(' → ') || '结算中'}`;
+    }
+
+    private async waitWhilePaused(token: number): Promise<void> {
+        while (this._paused && this.isCurrentRun(token)) {
+            await new Promise<void>((resolve) => setTimeout(resolve, 50));
+        }
+    }
+
     private onPreviewUnitSwitch(): void {
         const count = this._flow.units.length;
         if (!this._animationPreviewActive || !count) return;
@@ -737,6 +980,10 @@ export class BattleMain extends Component {
     }
 
     private stopAutoBattle(resetAnimations = true): void {
+        this.cancelManualDecision();
+        this._paused = false;
+        this._animationPlayer.setPaused(false);
+        this.refreshControlLabels();
         this._runToken++;
         this._loopRunning = false;
         if (resetAnimations) this._animationPlayer.reset();
@@ -812,7 +1059,7 @@ export class BattleMain extends Component {
     }
 
     private delay(milliseconds: number): Promise<void> {
-        return new Promise((resolve) => setTimeout(resolve, milliseconds));
+        return new Promise((resolve) => setTimeout(resolve, milliseconds / this._playbackSpeed));
     }
 
     private onBack(): void {

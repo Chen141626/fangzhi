@@ -67,6 +67,8 @@ export class BattleEffectEngine {
             camp,
             attributes: { ...attributes },
             currentHp: attributes.maxHp,
+            energy: 0,
+            maxEnergy: 100,
             buffs: [],
             triggeredPassives: [],
         };
