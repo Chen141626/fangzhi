@@ -14,6 +14,8 @@ import { getUnitBattleSkills } from './BattleSkillConfig';
 
 export interface BattleOpenArgs {
     stageId?: string;
+    /** 从主界面进入时先展示关卡选择，而不是直接开战。 */
+    selectStage?: boolean;
     /** 阵容界面传入角色实例 ID，顺序即站位顺序，最多5名。 */
     allyInstanceIds?: readonly string[];
     /** 调试、剧情或服务器下发时可直接覆盖玩家阵容。 */
@@ -24,6 +26,7 @@ export interface ResolvedBattleSession {
     stage: BattleStageConfig;
     allies: readonly BattleUnitConfig[];
     enemies: readonly BattleUnitConfig[];
+    waves: readonly (readonly BattleUnitConfig[])[];
     roster: readonly BattleUnitConfig[];
     usingFallbackAllies: boolean;
 }
@@ -189,6 +192,9 @@ function resolveAllies(args: BattleOpenArgs): {
 export function resolveBattleSession(args: BattleOpenArgs = {}): ResolvedBattleSession {
     const stage = getBattleStageConfig(args.stageId ?? DEFAULT_BATTLE_STAGE_ID);
     const { allies, usingFallback } = resolveAllies(args);
+    const waves = stage.waves?.length
+        ? stage.waves.map((wave) => wave.enemies)
+        : [stage.enemies];
     if (!allies.length || allies.length > 5) {
         throw new Error('[BattleRoster] 友方阵容人数必须为1-5。');
     }
@@ -200,8 +206,9 @@ export function resolveBattleSession(args: BattleOpenArgs = {}): ResolvedBattleS
     return {
         stage,
         allies,
-        enemies: stage.enemies,
-        roster: [...allies, ...stage.enemies],
+        enemies: waves[0],
+        waves,
+        roster: [...allies, ...waves[0]],
         usingFallbackAllies: usingFallback,
     };
 }

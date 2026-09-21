@@ -82,6 +82,7 @@ export class BattleFlowController {
     start(
         roster: readonly BattleUnitConfig[] = BATTLE_DEMO_ROSTER,
         maxRounds = this._maxRounds,
+        carriedUnits: readonly BattleUnitState[] = [],
     ): BattleStartResult {
         if (!Number.isInteger(maxRounds) || maxRounds < 1) {
             throw new RangeError(`Battle max rounds must be a positive integer, received: ${maxRounds}`);
@@ -108,6 +109,16 @@ export class BattleFlowController {
                 config.attributes,
             );
         });
+
+        const carriedById = new Map(carriedUnits.map((unit) => [unit.id, unit]));
+        for (const unit of this.units) {
+            const carried = carriedById.get(unit.id);
+            if (!carried || carried.camp !== unit.camp || carried.configId !== unit.configId) continue;
+            unit.currentHp = Math.max(0, Math.min(unit.attributes.maxHp, carried.currentHp));
+            unit.energy = Math.max(0, Math.min(unit.maxEnergy, carried.energy));
+            unit.buffs = carried.buffs.map((buff) => ({ ...buff }));
+            unit.triggeredPassives = [...carried.triggeredPassives];
+        }
 
         for (const unit of this.units) this._cooldowns.set(unit.id, new Map<string, number>());
         const logs = this.engine.initializeBattle(this.units);
