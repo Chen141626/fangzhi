@@ -17,9 +17,15 @@ import {
 } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
+import { BattleAnimationSequence } from './BattleAnimationConfig';
 import { BattleAnimationPlayer } from './BattleAnimationPlayer';
 import { BATTLE_BUFF_CONFIG } from './BattleBuffConfig';
-import { BattleDemoUnitConfig, BATTLE_DEMO_ALLIES, BATTLE_DEMO_ENEMIES } from './BattleDemoConfig';
+import {
+    BattleDemoUnitConfig,
+    BATTLE_DEMO_ALLIES,
+    BATTLE_DEMO_ENEMIES,
+    validateBattleDemoConfig,
+} from './BattleDemoConfig';
 import { BattleFlowController, BattleStepResult, cloneBattleUnits } from './BattleFlowController';
 import { BattleCamp, BattleLogEntry, BattleUnitState } from './BattleEffectTypes';
 
@@ -35,6 +41,22 @@ interface BattleUnitView {
     buffLabel: Label;
     turnLabel: Label;
 }
+
+interface RuntimeButton {
+    node: Node;
+    label: Label;
+}
+
+const ANIMATION_PREVIEW_OPTIONS: readonly {
+    sequence: BattleAnimationSequence;
+    label: string;
+}[] = [
+    { sequence: 'idle', label: '待机' },
+    { sequence: 'attack', label: '普攻' },
+    { sequence: 'action', label: '技能' },
+    { sequence: 'hit', label: '受击' },
+    { sequence: 'death', label: '死亡' },
+];
 
 function findChild(root: Node, path: string): Node | null {
     let current: Node | null = root;
@@ -59,10 +81,23 @@ export class BattleMain extends Component {
     private _resultLayer: Node | null = null;
     private _resultLabel: Label | null = null;
     private _restartButton: Node | null = null;
+    private _animationPreviewPanel: Node | null = null;
+    private _animationPreviewToggleButton: Node | null = null;
+    private _animationPreviewToggleLabel: Label | null = null;
+    private _previewUnitButton: Node | null = null;
+    private _previewUnitLabel: Label | null = null;
+    private _previewSequenceButton: Node | null = null;
+    private _previewSequenceLabel: Label | null = null;
+    private _previewReplayButton: Node | null = null;
+    private _animationPreviewActive = false;
+    private _previewUnitIndex = 0;
+    private _previewSequenceIndex = 0;
+    private _previewToken = 0;
     private _runToken = 0;
     private _loopRunning = false;
 
     protected onLoad(): void {
+        validateBattleDemoConfig();
         if (!this.getComponent(BlockInputEvents)) this.addComponent(BlockInputEvents);
         this._backButton = findChild(this.node, 'btn_back');
         this._backButton?.on(Node.EventType.TOUCH_END, this.onBack, this);
@@ -86,10 +121,20 @@ export class BattleMain extends Component {
         this.stopAutoBattle();
         this._backButton?.off(Node.EventType.TOUCH_END, this.onBack, this);
         this._restartButton?.off(Node.EventType.TOUCH_END, this.restartBattle, this);
+        this._animationPreviewToggleButton?.off(
+            Node.EventType.TOUCH_END, this.onAnimationPreviewToggle, this,
+        );
+        this._previewUnitButton?.off(Node.EventType.TOUCH_END, this.onPreviewUnitSwitch, this);
+        this._previewSequenceButton?.off(Node.EventType.TOUCH_END, this.onPreviewSequenceSwitch, this);
+        this._previewReplayButton?.off(Node.EventType.TOUCH_END, this.onPreviewReplay, this);
     }
 
     /** 固定阵容重新开战，也供结果面板按钮调用。 */
     restartBattle(): void {
+        this._animationPreviewActive = false;
+        this._previewToken++;
+        if (this._animationPreviewPanel) this._animationPreviewPanel.active = false;
+        if (this._animationPreviewToggleLabel) this._animationPreviewToggleLabel.string = '动画预览';
         this.stopAutoBattle();
         const token = this._runToken;
         this._resultLayer && (this._resultLayer.active = false);
@@ -302,6 +347,7 @@ export class BattleMain extends Component {
                     unit.id,
                     unit.configId,
                     unit.camp,
+                    config.animation,
                     view.item,
                     view.overlay,
                     view.icon,
@@ -338,9 +384,8 @@ export class BattleMain extends Component {
             view.turnLabel.string = unit.currentHp <= 0
                 ? '已阵亡'
                 : unit.id === activeActorId ? '◆ 行动中 ◆' : '';
-            if (view.icon) view.icon.color = unit.currentHp > 0
-                ? Color.WHITE
-                : new Color(78, 78, 78, 180);
+            // 死亡序列本身已经表达阵亡状态，保持原色避免把死亡动画整体染黑。
+            if (view.icon) view.icon.color = Color.WHITE;
         }
     }
 
@@ -372,6 +417,49 @@ export class BattleMain extends Component {
         runtime.addChild(topHud);
         this._roundLabel = this.createLabel(topHud, 'round', 0, 715, 280, 50, 34, new Color(255, 233, 159));
         this._stateLabel = this.createLabel(topHud, 'state', 0, 672, 330, 36, 21, new Color(194, 224, 255));
+
+        const previewToggle = this.createRuntimeButton(
+            runtime, 'btn_animation_preview', 270, 700, 160, 54, '动画预览',
+            new Color(55, 103, 153, 245),
+        );
+        this._animationPreviewToggleButton = previewToggle.node;
+        this._animationPreviewToggleLabel = previewToggle.label;
+        previewToggle.node.on(Node.EventType.TOUCH_END, this.onAnimationPreviewToggle, this);
+
+        this._animationPreviewPanel = new Node('animationPreviewPanel');
+        this._animationPreviewPanel.layer = this.node.layer;
+        this._animationPreviewPanel.setPosition(0, -530);
+        this._animationPreviewPanel.addComponent(UITransform).setContentSize(700, 96);
+        this._animationPreviewPanel.addComponent(BlockInputEvents);
+        const previewPanelGraphics = this._animationPreviewPanel.addComponent(Graphics);
+        previewPanelGraphics.fillColor = new Color(12, 22, 39, 230);
+        previewPanelGraphics.roundRect(-350, -48, 700, 96, 18);
+        previewPanelGraphics.fill();
+        runtime.addChild(this._animationPreviewPanel);
+
+        const unitButton = this.createRuntimeButton(
+            this._animationPreviewPanel, 'btn_preview_unit', -205, 0, 250, 62,
+            '对象：晶霜法师', new Color(48, 91, 135, 255),
+        );
+        this._previewUnitButton = unitButton.node;
+        this._previewUnitLabel = unitButton.label;
+        unitButton.node.on(Node.EventType.TOUCH_END, this.onPreviewUnitSwitch, this);
+
+        const sequenceButton = this.createRuntimeButton(
+            this._animationPreviewPanel, 'btn_preview_sequence', 55, 0, 230, 62,
+            '动画：待机', new Color(131, 89, 38, 255),
+        );
+        this._previewSequenceButton = sequenceButton.node;
+        this._previewSequenceLabel = sequenceButton.label;
+        sequenceButton.node.on(Node.EventType.TOUCH_END, this.onPreviewSequenceSwitch, this);
+
+        const replayButton = this.createRuntimeButton(
+            this._animationPreviewPanel, 'btn_preview_replay', 270, 0, 120, 62,
+            '重播', new Color(45, 130, 97, 255),
+        );
+        this._previewReplayButton = replayButton.node;
+        replayButton.node.on(Node.EventType.TOUCH_END, this.onPreviewReplay, this);
+        this._animationPreviewPanel.active = false;
 
         const actionPanel = new Node('actionPanel');
         actionPanel.layer = this.node.layer;
@@ -445,6 +533,104 @@ export class BattleMain extends Component {
         label.enableWrapText = true;
         parent.addChild(node);
         return label;
+    }
+
+    private createRuntimeButton(
+        parent: Node,
+        name: string,
+        x: number,
+        y: number,
+        width: number,
+        height: number,
+        text: string,
+        color: Color,
+    ): RuntimeButton {
+        const node = new Node(name);
+        node.layer = this.node.layer;
+        node.setPosition(x, y);
+        node.addComponent(UITransform).setContentSize(width, height);
+        const graphics = node.addComponent(Graphics);
+        graphics.fillColor = color;
+        graphics.roundRect(-width / 2, -height / 2, width, height, 16);
+        graphics.fill();
+        parent.addChild(node);
+        const label = this.createLabel(
+            node, 'Label', 0, 0, width - 20, height - 10, 22, Color.WHITE,
+        );
+        label.string = text;
+        return { node, label };
+    }
+
+    private onAnimationPreviewToggle(): void {
+        if (this._animationPreviewActive) {
+            this.restartBattle();
+            return;
+        }
+        this.stopAutoBattle();
+        this._animationPreviewActive = true;
+        this._previewToken++;
+        if (this._resultLayer) this._resultLayer.active = false;
+        if (this._animationPreviewPanel) this._animationPreviewPanel.active = true;
+        if (this._animationPreviewToggleLabel) this._animationPreviewToggleLabel.string = '返回战斗';
+        if (this._roundLabel) this._roundLabel.string = '动画预览';
+        if (this._stateLabel) this._stateLabel.string = '自动战斗已暂停';
+        this.refreshAnimationPreviewLabels();
+        void this.playCurrentAnimationPreview();
+    }
+
+    private onPreviewUnitSwitch(): void {
+        const count = this._flow.units.length;
+        if (!this._animationPreviewActive || !count) return;
+        this._previewUnitIndex = (this._previewUnitIndex + 1) % count;
+        this.refreshAnimationPreviewLabels();
+        void this.playCurrentAnimationPreview();
+    }
+
+    private onPreviewSequenceSwitch(): void {
+        if (!this._animationPreviewActive) return;
+        this._previewSequenceIndex = (
+            this._previewSequenceIndex + 1
+        ) % ANIMATION_PREVIEW_OPTIONS.length;
+        this.refreshAnimationPreviewLabels();
+        void this.playCurrentAnimationPreview();
+    }
+
+    private onPreviewReplay(): void {
+        if (this._animationPreviewActive) void this.playCurrentAnimationPreview();
+    }
+
+    private refreshAnimationPreviewLabels(): void {
+        const units = this._flow.units;
+        const unit = units.length ? units[this._previewUnitIndex % units.length] : null;
+        const option = ANIMATION_PREVIEW_OPTIONS[this._previewSequenceIndex];
+        if (this._previewUnitLabel) this._previewUnitLabel.string = `对象：${unit?.name ?? '无'}`;
+        if (this._previewSequenceLabel) this._previewSequenceLabel.string = `动画：${option.label}`;
+    }
+
+    private async playCurrentAnimationPreview(): Promise<void> {
+        if (!this._animationPreviewActive) return;
+        const units = this._flow.units;
+        const unit = units.length ? units[this._previewUnitIndex % units.length] : null;
+        if (!unit) return;
+        const option = ANIMATION_PREVIEW_OPTIONS[this._previewSequenceIndex];
+        const token = ++this._previewToken;
+        const isCurrent = () => (
+            this._animationPreviewActive
+            && token === this._previewToken
+            && this.isValid
+            && this.node.activeInHierarchy
+        );
+        if (this._stateLabel) this._stateLabel.string = '动画资源加载中…';
+        await this._animationPlayer.preload(units.map((item) => item.configId));
+        if (!isCurrent()) return;
+        this._animationPlayer.reset();
+        if (this._stateLabel) this._stateLabel.string = `预览：${unit.name} · ${option.label}`;
+        this.setActionText(`正在播放【${option.label}】`, [{
+            type: 'skipTurn',
+            targetUnitId: unit.id,
+            message: '点击对象或动画按钮可继续切换，点击重播可重复查看。',
+        }]);
+        await this._animationPlayer.previewAnimation(unit.id, option.sequence, isCurrent);
     }
 
     private stopAutoBattle(): void {

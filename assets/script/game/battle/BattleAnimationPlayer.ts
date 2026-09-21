@@ -7,6 +7,7 @@ import {
     Node,
     Sprite,
     SpriteFrame,
+    Texture2D,
     tween,
     Tween,
     UIOpacity,
@@ -16,19 +17,30 @@ import {
     warn,
     resources,
 } from 'cc';
+import {
+    BattleAnimationSequence,
+    BattleUnitAnimationConfig,
+    resolveBattleFrameFacing,
+} from './BattleAnimationConfig';
 import { BattleCamp, BattleLogEntry } from './BattleEffectTypes';
 
 const IDLE_FRAME_COUNT = 4;
+const ATTACK_FRAME_COUNT = 6;
 const ACTION_FRAME_COUNT = 6;
 const HIT_FRAME_COUNT = 4;
+const DEATH_FRAME_COUNT = 4;
 const VFX_FRAME_COUNT = 6;
-const FRAME_INTERVAL_MS = 85;
+const ACTION_FRAME_TIMINGS_MS = [110, 85, 85, 95, 120, 140] as const;
+const HIT_FRAME_TIMINGS_MS = [80, 70, 85, 110] as const;
+const DEATH_FRAME_TIMINGS_MS = [125, 115, 140, 180] as const;
 const UNIT_ANIMATION_CANVAS_SIZE = 640;
 
 interface UnitAnimationFrames {
     idle: SpriteFrame[];
+    attack: SpriteFrame[];
     action: SpriteFrame[];
     hit: SpriteFrame[];
+    death: SpriteFrame[];
     skillVfx: SpriteFrame[];
 }
 
@@ -36,21 +48,25 @@ interface UnitAnimationBinding {
     unitId: string;
     configId: string;
     camp: BattleCamp;
+    animationConfig: BattleUnitAnimationConfig;
     item: Node;
     overlay: Node;
     sprite: Sprite;
     alive: boolean;
     basePosition: Vec3;
     baseScale: Vec3;
+    animationVersion: number;
+    deathState: 'alive' | 'pending' | 'playing' | 'complete';
 }
 
 export type BattleVfxStyle = 'basic' | 'skill' | 'none';
 
-/** 统一管理战斗角色序列帧、命中特效、受击震动和飘字。 */
+/** 统一管理战斗角色序列帧、命中特效、受击/死亡反馈和飘字。 */
 export class BattleAnimationPlayer {
     private readonly _frames = new Map<string, UnitAnimationFrames>();
     private readonly _bindings = new Map<string, UnitAnimationBinding>();
     private readonly _lockedUnits = new Set<string>();
+    private readonly _deathPromises = new Map<string, Promise<void>>();
     private readonly _transientNodes = new Set<Node>();
     private _skillBundle: AssetManager.Bundle | null = null;
     private _commonHitFrames: SpriteFrame[] = [];
@@ -61,32 +77,73 @@ export class BattleAnimationPlayer {
         unitId: string,
         configId: string,
         camp: BattleCamp,
+        animationConfig: BattleUnitAnimationConfig,
         item: Node,
         overlay: Node,
         sprite: Sprite,
     ): void {
         // 角色动画素材统一使用正方形画布。固定为 CUSTOM，避免 RAW 模式随每帧原图尺寸重排节点。
         sprite.sizeMode = Sprite.SizeMode.CUSTOM;
+        // 必须按原始画布计算顶点；若使用裁剪模式，不同帧会各自拉满节点，造成缩放和位置抖动。
+        sprite.trim = false;
         sprite.node.getComponent(UITransform)?.setContentSize(
             UNIT_ANIMATION_CANVAS_SIZE,
             UNIT_ANIMATION_CANVAS_SIZE,
         );
+        const prefabScale = sprite.node.scale.clone();
+        const baseDirection = this.resolveLocalSpriteDirection(
+            sprite.node,
+            camp,
+            animationConfig.sourceFacing,
+        );
+        const baseScale = new Vec3(
+            Math.abs(prefabScale.x) * baseDirection,
+            prefabScale.y,
+            prefabScale.z,
+        );
+        sprite.node.setScale(baseScale);
+        this._deathPromises.delete(unitId);
         this._bindings.set(unitId, {
             unitId,
             configId,
             camp,
+            animationConfig,
             item,
             overlay,
             sprite,
             alive: true,
             basePosition: sprite.node.position.clone(),
-            baseScale: sprite.node.scale.clone(),
+            baseScale,
+            animationVersion: 0,
+            deathState: 'alive',
         });
     }
 
     setAlive(unitId: string, alive: boolean): void {
         const binding = this._bindings.get(unitId);
-        if (binding) binding.alive = alive;
+        if (!binding || binding.alive === alive) return;
+        binding.alive = alive;
+        if (!alive) {
+            // 死亡由 defeated 日志驱动，保证伤害特效、受击、死亡按顺序播放并被战斗流程等待。
+            binding.deathState = 'pending';
+            binding.animationVersion++;
+            this._lockedUnits.delete(unitId);
+            if (binding.sprite.isValid) {
+                Tween.stopAllByTarget(binding.sprite.node);
+                binding.sprite.node.setPosition(binding.basePosition);
+                binding.sprite.node.setScale(binding.baseScale);
+            }
+            return;
+        }
+        binding.deathState = 'alive';
+        this._deathPromises.delete(unitId);
+        binding.animationVersion++;
+        this._lockedUnits.delete(unitId);
+        if (!binding.sprite.isValid) return;
+        Tween.stopAllByTarget(binding.sprite.node);
+        binding.sprite.node.setPosition(binding.basePosition);
+        binding.sprite.node.setScale(binding.baseScale);
+        this.restoreIdleFrame(binding);
     }
 
     /** 提前加载演示阵容需要的帧，避免战斗中途第一次施法卡顿。 */
@@ -104,13 +161,20 @@ export class BattleAnimationPlayer {
         await Promise.all(uniqueIds.map(async (configId) => {
             if (this._frames.has(configId)) return;
             const root = `gui/common/anim/${configId}_animations`;
-            const [idle, action, hit, skillVfx] = await Promise.all([
+            const [idle, attack, action, hit, death, skillVfx] = await Promise.all([
                 this.loadResourceSequence(`${root}/${configId}_idle_4f_frames`, IDLE_FRAME_COUNT),
+                this.loadResourceSequence(`${root}/${configId}_attack_6f_frames`, ATTACK_FRAME_COUNT, false),
                 this.loadResourceSequence(`${root}/${configId}_skill_6f_frames`, ACTION_FRAME_COUNT),
                 this.loadResourceSequence(`${root}/${configId}_hit_4f_frames`, HIT_FRAME_COUNT),
+                this.loadResourceSequence(
+                    `${root}/${configId}_death_4f_frames`,
+                    DEATH_FRAME_COUNT,
+                    true,
+                    true,
+                ),
                 this.loadUnitSkillVfx(configId),
             ]);
-            this._frames.set(configId, { idle, action, hit, skillVfx });
+            this._frames.set(configId, { idle, attack, action, hit, death, skillVfx });
         }));
 
     }
@@ -124,12 +188,16 @@ export class BattleAnimationPlayer {
         for (const binding of this._bindings.values()) {
             if (!binding.alive || this._lockedUnits.has(binding.unitId) || !binding.sprite.isValid) continue;
             const idleFrames = this._frames.get(binding.configId)?.idle ?? [];
-            if (idleFrames.length) binding.sprite.spriteFrame = idleFrames[this._idleIndex % idleFrames.length];
+            if (idleFrames.length) {
+                const frameIndex = this._idleIndex % idleFrames.length;
+                this.applyUnitFrame(binding, idleFrames[frameIndex], 'idle', frameIndex + 1);
+            }
         }
     }
 
     reset(): void {
         this._lockedUnits.clear();
+        this._deathPromises.clear();
         this._idleElapsed = 0;
         this._idleIndex = 0;
         for (const node of this._transientNodes) {
@@ -138,6 +206,9 @@ export class BattleAnimationPlayer {
         this._transientNodes.clear();
         for (const binding of this._bindings.values()) {
             if (!binding.sprite.node.isValid) continue;
+            binding.alive = true;
+            binding.deathState = 'alive';
+            binding.animationVersion++;
             Tween.stopAllByTarget(binding.sprite.node);
             binding.sprite.node.setPosition(binding.basePosition);
             binding.sprite.node.setScale(binding.baseScale);
@@ -151,13 +222,54 @@ export class BattleAnimationPlayer {
         isCurrent: () => boolean,
     ): Promise<void> {
         const binding = this._bindings.get(unitId);
-        if (!binding?.sprite.isValid) return;
-        const frames = this._frames.get(binding.configId)?.action ?? [];
+        if (!binding?.sprite.isValid || !binding.alive) return;
+        const unitFrames = this._frames.get(binding.configId);
+        const useIndependentAttack = isBasicAttack && !!unitFrames?.attack.length;
+        const frames = useIndependentAttack
+            ? unitFrames?.attack ?? []
+            : unitFrames?.action ?? [];
+        const sequence: BattleAnimationSequence = useIndependentAttack ? 'attack' : 'action';
+        const animationVersion = ++binding.animationVersion;
         this._lockedUnits.add(unitId);
-        this.playActionMotion(binding, isBasicAttack);
-        await this.playFrames(binding.sprite, frames, FRAME_INTERVAL_MS, isCurrent);
+        const keepPlaying = () => isCurrent()
+            && binding.alive
+            && binding.animationVersion === animationVersion;
+        if (frames.length) {
+            // 序列帧本身已经包含前冲和蓄力，不再叠加节点位移/缩放，避免动作出现双重运动。
+            await this.playUnitFrames(binding, frames, sequence, ACTION_FRAME_TIMINGS_MS, keepPlaying);
+        }
+        else {
+            // 资源缺失时才使用节点 tween 作为兜底动作，并等待 tween 完成后再结算命中。
+            this.playActionMotion(binding, isBasicAttack);
+            await this.delay(300);
+        }
+        if (binding.animationVersion !== animationVersion) return;
         this._lockedUnits.delete(unitId);
-        if (isCurrent()) this.restoreIdleFrame(binding);
+        if (isCurrent() && binding.alive) this.restoreIdleFrame(binding);
+    }
+
+    /** 战斗界面的动画验收入口；调用前由界面重置单位状态。 */
+    async previewAnimation(
+        unitId: string,
+        sequence: BattleAnimationSequence,
+        isCurrent: () => boolean,
+    ): Promise<void> {
+        const binding = this._bindings.get(unitId);
+        if (!binding?.sprite.isValid || !isCurrent()) return;
+        if (sequence === 'idle') {
+            this.restoreIdleFrame(binding);
+            return;
+        }
+        if (sequence === 'attack' || sequence === 'action') {
+            await this.playAction(unitId, sequence === 'attack', isCurrent);
+            return;
+        }
+        if (sequence === 'hit') {
+            await this.playHit(unitId, isCurrent);
+            return;
+        }
+        this.setAlive(unitId, false);
+        if (isCurrent()) await this.playDeath(unitId, isCurrent);
     }
 
     async playImpacts(
@@ -173,6 +285,10 @@ export class BattleAnimationPlayer {
         const hitIds = Array.from(new Set(logs
             .filter((log) => log.type === 'damage' && (log.value ?? 0) > 0)
             .map((log) => log.targetUnitId)));
+        const defeatedIds = new Set(logs
+            .filter((log) => log.type === 'defeated')
+            .map((log) => log.targetUnitId));
+        const reactionIds = Array.from(new Set([...hitIds, ...defeatedIds]));
 
         const unitSkillVfx = casterConfigId
             ? this._frames.get(casterConfigId)?.skillVfx ?? []
@@ -184,7 +300,11 @@ export class BattleAnimationPlayer {
         this.showFloatingValues(logs);
         await Promise.all([
             ...vfxTargetIds.map((unitId) => this.playVfx(unitId, vfxFrames, isCurrent)),
-            ...hitIds.map((unitId) => this.playHit(unitId, isCurrent)),
+            ...reactionIds.map(async (unitId) => {
+                const defeated = defeatedIds.has(unitId);
+                if (hitIds.includes(unitId)) await this.playHit(unitId, isCurrent, defeated);
+                if (defeated && isCurrent()) await this.playDeath(unitId, isCurrent);
+            }),
         ]);
     }
 
@@ -194,8 +314,13 @@ export class BattleAnimationPlayer {
         const origin = binding.basePosition.clone();
         const scale = binding.baseScale.clone();
         if (isBasicAttack) {
+            const localForward = this.resolveLocalForwardDirection(node, binding.camp);
             tween(node)
-                .to(0.12, { position: new Vec3(origin.x + 34, origin.y, origin.z) }, { easing: 'quadOut' })
+                .to(
+                    0.12,
+                    { position: new Vec3(origin.x + 34 * localForward, origin.y, origin.z) },
+                    { easing: 'quadOut' },
+                )
                 .to(0.16, { position: origin }, { easing: 'quadIn' })
                 .start();
         }
@@ -207,26 +332,87 @@ export class BattleAnimationPlayer {
         }
     }
 
-    private async playHit(unitId: string, isCurrent: () => boolean): Promise<void> {
+    private async playHit(
+        unitId: string,
+        isCurrent: () => boolean,
+        allowDefeated = false,
+    ): Promise<void> {
         const binding = this._bindings.get(unitId);
         if (!binding?.sprite.isValid) return;
+        const canPlay = () => binding.alive || (
+            allowDefeated && binding.deathState === 'pending'
+        );
+        if (!canPlay()) return;
         // 反击可能在施法者动作尚未播完时命中施法者，等待当前帧序列结束再播受击。
-        while (this._lockedUnits.has(unitId) && isCurrent()) await this.delay(25);
-        if (!isCurrent() || !binding.sprite.isValid) return;
+        while (this._lockedUnits.has(unitId) && canPlay() && isCurrent()) await this.delay(25);
+        if (!isCurrent() || !binding.sprite.isValid || !canPlay()) return;
         const frames = this._frames.get(binding.configId)?.hit ?? [];
         const node = binding.sprite.node;
         const origin = binding.basePosition.clone();
+        const animationVersion = ++binding.animationVersion;
         this._lockedUnits.add(unitId);
         Tween.stopAllByTarget(node);
-        tween(node)
-            .to(0.05, { position: new Vec3(origin.x - 12, origin.y, origin.z) })
-            .to(0.05, { position: new Vec3(origin.x + 10, origin.y, origin.z) })
-            .to(0.05, { position: new Vec3(origin.x - 6, origin.y, origin.z) })
-            .to(0.06, { position: origin })
-            .start();
-        await this.playFrames(binding.sprite, frames, 75, isCurrent);
+        node.setPosition(origin);
+        if (!frames.length && !allowDefeated) {
+            // 只有缺少受击序列时才用节点震动兜底；素材已有后仰时叠加震动会显得发飘。
+            tween(node)
+                .to(0.05, { position: new Vec3(origin.x - 12, origin.y, origin.z) })
+                .to(0.05, { position: new Vec3(origin.x + 10, origin.y, origin.z) })
+                .to(0.05, { position: new Vec3(origin.x - 6, origin.y, origin.z) })
+                .to(0.06, { position: origin })
+                .start();
+        }
+        const keepPlaying = () => isCurrent()
+            && canPlay()
+            && binding.animationVersion === animationVersion;
+        if (frames.length) {
+            await this.playUnitFrames(binding, frames, 'hit', HIT_FRAME_TIMINGS_MS, keepPlaying);
+        }
+        else {
+            await this.delay(210);
+        }
+        if (binding.animationVersion !== animationVersion) return;
         this._lockedUnits.delete(unitId);
-        if (isCurrent()) this.restoreIdleFrame(binding);
+        if (isCurrent() && binding.alive && !allowDefeated) this.restoreIdleFrame(binding);
+    }
+
+    private playDeath(unitId: string, isCurrent: () => boolean): Promise<void> {
+        const current = this._deathPromises.get(unitId);
+        if (current) return current;
+        const tracked = this.runDeath(unitId, isCurrent).finally(() => {
+            if (this._deathPromises.get(unitId) === tracked) this._deathPromises.delete(unitId);
+        });
+        this._deathPromises.set(unitId, tracked);
+        return tracked;
+    }
+
+    private async runDeath(unitId: string, isCurrent: () => boolean): Promise<void> {
+        const binding = this._bindings.get(unitId);
+        if (!binding?.sprite.isValid || binding.deathState === 'complete' || !isCurrent()) return;
+        binding.alive = false;
+        binding.deathState = 'playing';
+        const unitFrames = this._frames.get(binding.configId);
+        // 旧单位还没有独立死亡资源时回退到受击序列，避免死亡瞬间直接静止。
+        const frames = unitFrames?.death.length ? unitFrames.death : unitFrames?.hit ?? [];
+        const animationVersion = ++binding.animationVersion;
+        this._lockedUnits.add(unitId);
+        const node = binding.sprite.node;
+        Tween.stopAllByTarget(node);
+        node.setPosition(binding.basePosition);
+        node.setScale(binding.baseScale);
+        await this.playUnitFrames(
+            binding,
+            frames,
+            'death',
+            DEATH_FRAME_TIMINGS_MS,
+            () => isCurrent()
+                && binding.deathState === 'playing'
+                && binding.animationVersion === animationVersion,
+        );
+        if (binding.animationVersion === animationVersion) {
+            binding.deathState = 'complete';
+            this._lockedUnits.delete(unitId);
+        }
     }
 
     private async playVfx(
@@ -314,8 +500,73 @@ export class BattleAnimationPlayer {
     }
 
     private restoreIdleFrame(binding: UnitAnimationBinding): void {
+        if (!binding.alive) return;
         const frames = this._frames.get(binding.configId)?.idle ?? [];
-        if (binding.sprite.isValid && frames.length) binding.sprite.spriteFrame = frames[this._idleIndex % frames.length];
+        if (binding.sprite.isValid && frames.length) {
+            const frameIndex = this._idleIndex % frames.length;
+            this.applyUnitFrame(binding, frames[frameIndex], 'idle', frameIndex + 1);
+        }
+    }
+
+    private applyUnitFrame(
+        binding: UnitAnimationBinding,
+        frame: SpriteFrame,
+        sequence: BattleAnimationSequence,
+        frameNumber: number,
+    ): void {
+        binding.sprite.spriteFrame = frame;
+        const node = binding.sprite.node;
+        const currentScale = node.scale;
+        const facing = resolveBattleFrameFacing(binding.animationConfig, sequence, frameNumber);
+        const targetDirection = this.resolveLocalSpriteDirection(node, binding.camp, facing);
+        const currentDirection = currentScale.x < 0 ? -1 : 1;
+        if (currentDirection === targetDirection) return;
+        // 只修正朝向符号，保留技能动作 tween 正在使用的缩放幅度。
+        node.setScale(Math.abs(currentScale.x) * targetDirection, currentScale.y, currentScale.z);
+    }
+
+    private async playUnitFrames(
+        binding: UnitAnimationBinding,
+        frames: readonly SpriteFrame[],
+        sequence: BattleAnimationSequence,
+        intervalMs: number | readonly number[],
+        isCurrent: () => boolean,
+    ): Promise<void> {
+        for (let index = 0; index < frames.length; index++) {
+            if (!isCurrent() || !binding.sprite.isValid) return;
+            this.applyUnitFrame(binding, frames[index], sequence, index + 1);
+            const frameInterval = typeof intervalMs === 'number'
+                ? intervalMs
+                : intervalMs[Math.min(index, intervalMs.length - 1)] ?? 0;
+            await this.delay(frameInterval);
+        }
+    }
+
+    /** 把屏幕上的目标朝向换算为当前父层级坐标中的本地朝向。 */
+    private resolveLocalSpriteDirection(
+        node: Node,
+        camp: BattleCamp,
+        sourceFacing: 'left' | 'right',
+    ): number {
+        const desiredScreenDirection = camp === 'ally' ? 1 : -1;
+        const sourceDirection = sourceFacing === 'right' ? 1 : -1;
+        return desiredScreenDirection * sourceDirection * this.getAncestorHorizontalDirection(node);
+    }
+
+    /** 位移不受角色 Sprite 自身镜像影响，只需抵消父层级的镜像。 */
+    private resolveLocalForwardDirection(node: Node, camp: BattleCamp): number {
+        const desiredScreenDirection = camp === 'ally' ? 1 : -1;
+        return desiredScreenDirection * this.getAncestorHorizontalDirection(node);
+    }
+
+    private getAncestorHorizontalDirection(node: Node): number {
+        let direction = 1;
+        let ancestor = node.parent;
+        while (ancestor) {
+            if (ancestor.scale.x < 0) direction *= -1;
+            ancestor = ancestor.parent;
+        }
+        return direction;
     }
 
     private async playFrames(
@@ -337,18 +588,39 @@ export class BattleAnimationPlayer {
         return this.loadBundleSequence(this._skillBundle, root, VFX_FRAME_COUNT, false);
     }
 
-    private async loadResourceSequence(root: string, count: number): Promise<SpriteFrame[]> {
+    private async loadResourceSequence(
+        root: string,
+        count: number,
+        reportMissing = true,
+        allowTextureFallback = false,
+    ): Promise<SpriteFrame[]> {
         const result: SpriteFrame[] = [];
         for (let index = 1; index <= count; index++) {
-            const path = `${root}/frame_${String(index).padStart(2, '0')}/spriteFrame`;
+            const frameRoot = `${root}/frame_${String(index).padStart(2, '0')}`;
+            const path = `${frameRoot}/spriteFrame`;
             const frame = await new Promise<SpriteFrame | null>((resolve) => {
                 resources.load(path, SpriteFrame, (error, asset) => {
-                    if (error || !asset) {
-                        warn(`[BattleAnimation] 序列帧加载失败：${path}`);
+                    if (!error && asset) {
+                        resolve(asset);
+                        return;
+                    }
+                    if (!allowTextureFallback) {
+                        if (reportMissing) warn(`[BattleAnimation] 序列帧加载失败：${path}`);
                         resolve(null);
                         return;
                     }
-                    resolve(asset);
+                    // 新导入的死亡帧目前是 Texture2D，运行时包装为完整画布 SpriteFrame。
+                    resources.load(frameRoot, Texture2D, (textureError, texture) => {
+                        if (textureError || !texture) {
+                            if (reportMissing) warn(`[BattleAnimation] 序列帧加载失败：${frameRoot}`);
+                            resolve(null);
+                            return;
+                        }
+                        const generatedFrame = new SpriteFrame();
+                        generatedFrame.texture = texture;
+                        generatedFrame.name = `${frameRoot}/runtimeSpriteFrame`;
+                        resolve(generatedFrame);
+                    });
                 });
             });
             if (frame) result.push(frame);
