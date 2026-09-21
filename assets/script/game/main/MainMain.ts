@@ -1,6 +1,7 @@
 import { _decorator, Component, Node, warn } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
+import { DEFAULT_BATTLE_STAGE_ID } from '../battle/BattleStageConfig';
 
 const { ccclass, menu } = _decorator;
 
@@ -71,10 +72,10 @@ export class MainMain extends Component {
         });
     }
 
-    /** 打开固定 5v5 演示战斗。 */
+    /** 打开默认关卡；战斗页会从角色存档自动选择最多5名角色。 */
     openBattle(): void {
         if (oops.gui.has(UIID.Battle)) return;
-        oops.gui.open(UIID.Battle, null, {
+        oops.gui.open(UIID.Battle, { stageId: DEFAULT_BATTLE_STAGE_ID }, {
             onLoadFailure: () => warn('[MainMain] 战斗界面加载失败，请检查 battle bundle。'),
         });
     }

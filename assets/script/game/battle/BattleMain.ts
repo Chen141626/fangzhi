@@ -21,13 +21,19 @@ import { BattleAnimationSequence } from './BattleAnimationConfig';
 import { BattleAnimationPlayer } from './BattleAnimationPlayer';
 import { BATTLE_BUFF_CONFIG } from './BattleBuffConfig';
 import {
-    BattleDemoUnitConfig,
-    BATTLE_DEMO_ALLIES,
-    BATTLE_DEMO_ENEMIES,
+    BattleUnitConfig,
     validateBattleDemoConfig,
 } from './BattleDemoConfig';
 import { BattleFlowController, BattleStepResult, cloneBattleUnits } from './BattleFlowController';
 import { BattleCamp, BattleLogEntry, BattleUnitState } from './BattleEffectTypes';
+import {
+    BattleOpenArgs,
+    ResolvedBattleSession,
+    resolveBattleSession,
+} from './BattleRosterService';
+import { BattleRewardService, BattleSettlement } from './BattleRewardService';
+import { validateBattleSkillConfig } from './BattleSkillConfig';
+import { validateBattleStageConfig } from './BattleStageConfig';
 
 const { ccclass, menu } = _decorator;
 
@@ -58,6 +64,21 @@ const ANIMATION_PREVIEW_OPTIONS: readonly {
     { sequence: 'death', label: '死亡' },
 ];
 
+const ITEM_NAMES: Readonly<Record<string, string>> = {
+    'currency.gold': '金币',
+    'currency.jade': '仙玉',
+    'currency.crystal': '仙晶',
+    'consumable.qi-pill': '聚气丹',
+    'item.reward-chest': '珍稀宝箱',
+};
+
+let battleSequence = 0;
+
+function nextBattleId(stageId: string): string {
+    battleSequence++;
+    return `${stageId}-${Date.now().toString(36)}-${battleSequence.toString(36)}`;
+}
+
 function findChild(root: Node, path: string): Node | null {
     let current: Node | null = root;
     for (const name of path.split('/')) {
@@ -67,13 +88,18 @@ function findChild(root: Node, path: string): Node | null {
     return current;
 }
 
-/** battle.prefab 的演示战斗控制器。 */
+/** battle.prefab 的战斗控制器，消费玩家阵容、关卡配置并完成奖励结算。 */
 @ccclass('BattleMain')
 @menu('Game/Battle/BattleMain')
 export class BattleMain extends Component {
     private readonly _flow = new BattleFlowController();
     private readonly _animationPlayer = new BattleAnimationPlayer();
+    private readonly _rewardService = new BattleRewardService();
     private readonly _unitViews = new Map<string, BattleUnitView>();
+    private _openArgs: BattleOpenArgs = {};
+    private _session: ResolvedBattleSession | null = null;
+    private _battleId = '';
+    private _settlement: BattleSettlement | null = null;
     private _backButton: Node | null = null;
     private _roundLabel: Label | null = null;
     private _stateLabel: Label | null = null;
@@ -81,6 +107,7 @@ export class BattleMain extends Component {
     private _resultLayer: Node | null = null;
     private _resultLabel: Label | null = null;
     private _restartButton: Node | null = null;
+    private _nextStageButton: Node | null = null;
     private _animationPreviewPanel: Node | null = null;
     private _animationPreviewToggleButton: Node | null = null;
     private _animationPreviewToggleLabel: Label | null = null;
@@ -98,11 +125,21 @@ export class BattleMain extends Component {
 
     protected onLoad(): void {
         validateBattleDemoConfig();
+        validateBattleSkillConfig();
+        validateBattleStageConfig();
         if (!this.getComponent(BlockInputEvents)) this.addComponent(BlockInputEvents);
         this._backButton = findChild(this.node, 'btn_back');
         this._backButton?.on(Node.EventType.TOUCH_END, this.onBack, this);
         this.buildRuntimeHierarchy();
         this.bindUnitSlots();
+    }
+
+    /** Oops GUI 打开参数；阵容界面可传 stageId 与 allyInstanceIds。 */
+    onAdded(params?: BattleOpenArgs): boolean {
+        this._openArgs = params && typeof params === 'object' ? params : {};
+        // 缓存页面再次打开时 onEnable 可能先执行，收到最新参数后重新开局并取消旧异步流程。
+        if (this.node.activeInHierarchy && this._unitViews.size) this.restartBattle();
+        return true;
     }
 
     protected onEnable(): void {
@@ -121,6 +158,7 @@ export class BattleMain extends Component {
         this.stopAutoBattle();
         this._backButton?.off(Node.EventType.TOUCH_END, this.onBack, this);
         this._restartButton?.off(Node.EventType.TOUCH_END, this.restartBattle, this);
+        this._nextStageButton?.off(Node.EventType.TOUCH_END, this.onNextStage, this);
         this._animationPreviewToggleButton?.off(
             Node.EventType.TOUCH_END, this.onAnimationPreviewToggle, this,
         );
@@ -129,7 +167,7 @@ export class BattleMain extends Component {
         this._previewReplayButton?.off(Node.EventType.TOUCH_END, this.onPreviewReplay, this);
     }
 
-    /** 固定阵容重新开战，也供结果面板按钮调用。 */
+    /** 使用当前玩家阵容和关卡配置重新开战，也供结果面板按钮调用。 */
     restartBattle(): void {
         this._animationPreviewActive = false;
         this._previewToken++;
@@ -138,14 +176,25 @@ export class BattleMain extends Component {
         this.stopAutoBattle();
         const token = this._runToken;
         this._resultLayer && (this._resultLayer.active = false);
-        const startResult = this._flow.start();
+        try {
+            this._session = resolveBattleSession(this._openArgs);
+        }
+        catch (error) {
+            warn(`[BattleMain] 战斗参数无效，已回退默认关卡：${String(error)}`);
+            this._openArgs = {};
+            this._session = resolveBattleSession();
+        }
+        this._battleId = nextBattleId(this._session.stage.id);
+        this._settlement = null;
+        for (const view of this._unitViews.values()) view.item.active = false;
+        const startResult = this._flow.start(this._session.roster, this._session.stage.maxRounds);
         const portraitLoading = Promise.all([
-            this.attachUnitsToViews('ally', BATTLE_DEMO_ALLIES, token),
-            this.attachUnitsToViews('enemy', BATTLE_DEMO_ENEMIES, token),
+            this.attachUnitsToViews('ally', this._session.allies, token),
+            this.attachUnitsToViews('enemy', this._session.enemies, token),
         ]).then(() => undefined);
         this.renderAll(null);
-        this.setActionText('双方入场，战斗开始！', startResult.logs);
-        if (this._roundLabel) this._roundLabel.string = '准备回合';
+        this.setActionText(`${this._session.stage.name} · 双方入场`, startResult.logs);
+        if (this._roundLabel) this._roundLabel.string = this._session.stage.name;
         if (this._stateLabel) this._stateLabel.string = '动画资源加载中…';
         void this.prepareAndRunBattle(token, portraitLoading);
     }
@@ -157,7 +206,12 @@ export class BattleMain extends Component {
         ]);
         if (!this.isCurrentRun(token)) return;
         this._animationPlayer.reset();
-        if (this._stateLabel) this._stateLabel.string = '自动战斗 · 5 vs 5';
+        const allyCount = this._session?.allies.length ?? 0;
+        const enemyCount = this._session?.enemies.length ?? 0;
+        const source = this._session?.usingFallbackAllies ? '体验阵容' : '玩家阵容';
+        if (this._stateLabel) {
+            this._stateLabel.string = `自动战斗 · ${allyCount} vs ${enemyCount} · ${source}`;
+        }
         await this.delay(350);
         if (!this.isCurrentRun(token)) return;
         await this.runBattleLoop(token);
@@ -280,7 +334,8 @@ export class BattleMain extends Component {
     }
 
     private finishBattle(): void {
-        this.stopAutoBattle();
+        // 保留死亡末帧；只终止流程，不在结算遮罩出现时重置角色动画。
+        this.stopAutoBattle(false);
         if (!this._resultLayer || !this._resultLabel) return;
         this._resultLayer.active = true;
         const result = this._flow.winner === 'ally'
@@ -288,8 +343,42 @@ export class BattleMain extends Component {
             : this._flow.winner === 'enemy'
                 ? '战斗失败'
                 : '战斗平局';
-        this._resultLabel.string = `${result}\n历经 ${this._flow.round} 回合`;
+        if (!this._settlement && this._session) {
+            try {
+                this._settlement = this._rewardService.settle(
+                    this._session.stage,
+                    this._flow.winner,
+                    this._battleId,
+                    this._flow.round,
+                );
+            }
+            catch (error) {
+                warn(`[BattleMain] 奖励结算失败：${String(error)}`);
+            }
+        }
+        const stageName = this._session?.stage.name ?? '未知关卡';
+        const settlementText = this.formatSettlement(this._settlement);
+        this._resultLabel.string = [
+            result,
+            stageName,
+            `历经 ${this._flow.round} 回合`,
+            settlementText,
+        ].filter(Boolean).join('\n');
+        const canContinue = this._flow.winner === 'ally' && !!this._session?.stage.nextStageId;
+        if (this._nextStageButton) this._nextStageButton.active = canContinue;
+        this._restartButton?.setPosition(canContinue ? -145 : 0, -145);
         if (this._stateLabel) this._stateLabel.string = '战斗结束';
+    }
+
+    private formatSettlement(settlement: BattleSettlement | null): string {
+        if (this._flow.winner !== 'ally') return '本次战斗无奖励';
+        if (!settlement) return '奖励发放失败，请重试';
+        if (settlement.duplicate) return '奖励已结算';
+        if (!settlement.rewards.length) return '本次战斗无奖励';
+        const rewardText = settlement.rewards
+            .map((item) => `${ITEM_NAMES[String(item.itemId)] ?? String(item.itemId)}×${item.amount}`)
+            .join('  ');
+        return `${settlement.firstClear ? '首通奖励 · ' : ''}${rewardText}`;
     }
 
     private bindUnitSlots(): void {
@@ -297,7 +386,7 @@ export class BattleMain extends Component {
             .filter((child) => child.name.startsWith('roleItem'));
         const enemyItems = (findChild(this.node, 'bg/leftNode-001')?.children ?? [])
             .filter((child) => child.name.startsWith('roleItem'));
-        if (allyItems.length < BATTLE_DEMO_ALLIES.length || enemyItems.length < BATTLE_DEMO_ENEMIES.length) {
+        if (allyItems.length < 5 || enemyItems.length < 5) {
             warn(`[BattleMain] 战斗站位不足：角色${allyItems.length}个，怪物${enemyItems.length}个。`);
         }
         this.createSlotViews(allyItems.slice(0, 5), 'ally');
@@ -332,7 +421,7 @@ export class BattleMain extends Component {
 
     private attachUnitsToViews(
         camp: BattleCamp,
-        configs: readonly BattleDemoUnitConfig[],
+        configs: readonly BattleUnitConfig[],
         token: number,
     ): Promise<void> {
         const units = this._flow.units.filter((unit) => unit.camp === camp);
@@ -484,17 +573,17 @@ export class BattleMain extends Component {
 
         const card = new Node('resultCard');
         card.layer = this.node.layer;
-        card.addComponent(UITransform).setContentSize(560, 330);
+        card.addComponent(UITransform).setContentSize(600, 400);
         const cardGraphics = card.addComponent(Graphics);
         cardGraphics.fillColor = new Color(25, 40, 68, 245);
-        cardGraphics.roundRect(-280, -165, 560, 330, 34);
+        cardGraphics.roundRect(-300, -200, 600, 400, 34);
         cardGraphics.fill();
         this._resultLayer.addChild(card);
-        this._resultLabel = this.createLabel(card, 'resultText', 0, 55, 480, 130, 42, new Color(255, 226, 129));
+        this._resultLabel = this.createLabel(card, 'resultText', 0, 55, 540, 220, 34, new Color(255, 226, 129));
 
         this._restartButton = new Node('btn_restart');
         this._restartButton.layer = this.node.layer;
-        this._restartButton.setPosition(0, -92);
+        this._restartButton.setPosition(0, -145);
         this._restartButton.addComponent(UITransform).setContentSize(260, 78);
         const buttonGraphics = this._restartButton.addComponent(Graphics);
         buttonGraphics.fillColor = new Color(46, 137, 204, 255);
@@ -503,6 +592,13 @@ export class BattleMain extends Component {
         card.addChild(this._restartButton);
         this.createLabel(this._restartButton, 'Label', 0, 0, 220, 60, 30, Color.WHITE).string = '再次挑战';
         this._restartButton.on(Node.EventType.TOUCH_END, this.restartBattle, this);
+
+        const nextStageButton = this.createRuntimeButton(
+            card, 'btn_next_stage', 145, -145, 220, 78, '下一关', new Color(58, 151, 91, 255),
+        );
+        this._nextStageButton = nextStageButton.node;
+        this._nextStageButton.on(Node.EventType.TOUCH_END, this.onNextStage, this);
+        this._nextStageButton.active = false;
         this._resultLayer.active = false;
 
         // 返回按钮始终高于结算遮罩，保证战斗结束后仍可退出页面。
@@ -599,6 +695,13 @@ export class BattleMain extends Component {
         if (this._animationPreviewActive) void this.playCurrentAnimationPreview();
     }
 
+    private onNextStage(): void {
+        const nextStageId = this._session?.stage.nextStageId;
+        if (!nextStageId || this._flow.winner !== 'ally') return;
+        this._openArgs = { ...this._openArgs, stageId: nextStageId };
+        this.restartBattle();
+    }
+
     private refreshAnimationPreviewLabels(): void {
         const units = this._flow.units;
         const unit = units.length ? units[this._previewUnitIndex % units.length] : null;
@@ -633,10 +736,10 @@ export class BattleMain extends Component {
         await this._animationPlayer.previewAnimation(unit.id, option.sequence, isCurrent);
     }
 
-    private stopAutoBattle(): void {
+    private stopAutoBattle(resetAnimations = true): void {
         this._runToken++;
         this._loopRunning = false;
-        this._animationPlayer.reset();
+        if (resetAnimations) this._animationPlayer.reset();
     }
 
     private setActiveActor(

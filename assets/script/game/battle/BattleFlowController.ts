@@ -1,4 +1,4 @@
-import { BattleDemoUnitConfig, BATTLE_DEMO_ROSTER } from './BattleDemoConfig';
+import { BattleUnitConfig, BATTLE_DEMO_ROSTER } from './BattleDemoConfig';
 import { BattleEffectEngine } from './BattleEffectEngine';
 import { BattleCamp, BattleLogEntry, BattleSkillConfig, BattleUnitState } from './BattleEffectTypes';
 import { getUnitBattleSkills } from './BattleSkillConfig';
@@ -54,12 +54,24 @@ export class BattleFlowController {
 
     constructor(
         random: () => number = Math.random,
-        private readonly _maxRounds = 30,
+        private _maxRounds = 30,
     ) {
         this.engine = new BattleEffectEngine(random);
     }
 
-    start(roster: readonly BattleDemoUnitConfig[] = BATTLE_DEMO_ROSTER): BattleStartResult {
+    start(
+        roster: readonly BattleUnitConfig[] = BATTLE_DEMO_ROSTER,
+        maxRounds = this._maxRounds,
+    ): BattleStartResult {
+        if (!Number.isInteger(maxRounds) || maxRounds < 1) {
+            throw new RangeError(`Battle max rounds must be a positive integer, received: ${maxRounds}`);
+        }
+        const allyCount = roster.filter((unit) => unit.camp === 'ally').length;
+        const enemyCount = roster.filter((unit) => unit.camp === 'enemy').length;
+        if (allyCount < 1 || allyCount > 5 || enemyCount < 1 || enemyCount > 5) {
+            throw new Error(`Battle roster must contain 1-5 units per camp, received: ${allyCount} vs ${enemyCount}`);
+        }
+        this._maxRounds = maxRounds;
         this.round = 0;
         this.status = 'running';
         this.winner = null;

@@ -1,8 +1,8 @@
 import { BattleAttributes, BattleCamp } from './BattleEffectTypes';
 import { BattleUnitAnimationConfig, validateBattleAnimationConfig } from './BattleAnimationConfig';
 
-/** 演示战斗中的固定单位。之后接阵容/关卡配置时只需替换这层数据来源。 */
-export interface BattleDemoUnitConfig {
+/** 战斗单位的运行时配置，可来自玩家阵容、关卡表或演示兜底。 */
+export interface BattleUnitConfig {
     configId: string;
     name: string;
     camp: BattleCamp;
@@ -10,6 +10,9 @@ export interface BattleDemoUnitConfig {
     animation: BattleUnitAnimationConfig;
     attributes: BattleAttributes;
 }
+
+/** 兼容已有引用；新代码统一使用 BattleUnitConfig。 */
+export type BattleDemoUnitConfig = BattleUnitConfig;
 
 export const BATTLE_DEMO_ALLIES: readonly BattleDemoUnitConfig[] = [
     {

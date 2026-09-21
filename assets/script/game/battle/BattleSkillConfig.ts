@@ -192,6 +192,66 @@ const UNIT_SKILL_LIST: readonly (readonly BattleSkillConfig[])[] = [
         { name: '震地炎环', description: '对全体敌人造成115%攻击伤害，施加灼烧并有25%概率眩晕。', effects: [damage('allEnemies', 1.15), buff('allEnemies', 'debuff_burn'), buff('allEnemies', 'debuff_stun', 0.25, 1)] },
         { name: '不坏体', description: '生命首次低于50%时获得1回合无敌和3回合持续恢复。', trigger: 'healthBelow50', effects: [buff('self', 'buff_invincible', 1, 1), buff('self', 'buff_regeneration', 1, 3)] },
     ]),
+    defineUnit('ally_19_xuanchao_chain_warden', '玄潮锁链使', [
+        { name: '锁潮鞭', description: '造成105%攻击伤害，并使目标减速2回合。', effects: [damage('singleEnemy', 1.05), buff('singleEnemy', 'debuff_slow', 1, 2)] },
+        { name: '玄链缚魂', description: '造成120%攻击伤害，降低防御并有45%概率眩晕。', effects: [damage('singleEnemy', 1.2), buff('singleEnemy', 'debuff_defense_down', 1, 2), buff('singleEnemy', 'debuff_stun', 0.45, 1)] },
+        { name: '沧潮锁域', description: '对全体敌人造成110%攻击伤害，施加减速并有35%概率沉默。', effects: [damage('allEnemies', 1.1), buff('allEnemies', 'debuff_slow', 1, 2), buff('allEnemies', 'debuff_silence', 0.35, 2)] },
+        { name: '镇狱守潮', description: '战斗开始时获得护盾、反击与坚韧3回合。', effects: [buff('self', 'buff_shield', 1, 3), buff('self', 'buff_counter', 1, 3), buff('self', 'buff_tenacity', 1, 3)] },
+    ]),
+    defineUnit('ally_20_red_furnace_smith', '赤炉锻师', [
+        { name: '熔锤击', description: '造成110%攻击伤害，并施加灼烧。', effects: [damage('singleEnemy', 1.1), buff('singleEnemy', 'debuff_burn')] },
+        { name: '百炼铸甲', description: '全体友方获得防御提升与护盾2回合。', effects: [buff('allAllies', 'buff_defense_up', 1, 2), buff('allAllies', 'buff_shield', 1, 2)] },
+        { name: '赤炉天火', description: '对全体敌人造成130%攻击伤害，并施加2层灼烧。', effects: [damage('allEnemies', 1.3), buff('allEnemies', 'debuff_burn', 1, 2, 2)] },
+        { name: '炉心不熄', description: '生命首次低于50%时获得攻击提升与持续恢复3回合。', trigger: 'healthBelow50', effects: [buff('self', 'buff_attack_up', 1, 3), buff('self', 'buff_regeneration', 1, 3)] },
+    ]),
+    defineUnit('ally_21_fuyou_parasol_envoy', '扶幽伞使', [
+        { name: '幽伞刃', description: '造成100%攻击伤害，30%概率致盲。', effects: [damage('singleEnemy', 1), buff('singleEnemy', 'debuff_blind', 0.3, 2)] },
+        { name: '扶幽回风', description: '治疗生命最低友方，净化1个减益并附加持续恢复。', effects: [heal('lowestHpAlly', 1.1, 0.06), cleanse('lowestHpAlly', 1), buff('lowestHpAlly', 'buff_regeneration', 1, 2)] },
+        { name: '万伞归云', description: '对全体敌人造成105%伤害，并治疗全体友方、赋予迅捷。', effects: [damage('allEnemies', 1.05), heal('allAllies', 0.55, 0.03), buff('allAllies', 'buff_haste', 1, 2)] },
+        { name: '伞下幽明', description: '战斗开始时，全体友方获得防御提升与控制免疫2回合。', effects: [buff('allAllies', 'buff_defense_up', 1, 2), buff('allAllies', 'buff_control_immunity', 1, 2)] },
+    ]),
+    defineUnit('ally_22_solar_scripture_keeper', '日曜经师', [
+        { name: '曜文击', description: '造成105%攻击伤害。', effects: [damage('singleEnemy', 1.05)] },
+        { name: '金经护法', description: '全体友方获得攻击与暴击提升2回合。', effects: [buff('allAllies', 'buff_attack_up', 1, 2), buff('allAllies', 'buff_critical_up', 1, 2)] },
+        { name: '日轮天章', description: '对全体敌人造成130%攻击伤害，驱散1个增益并施加灼烧。', effects: [damage('allEnemies', 1.3), dispel('allEnemies', 1), buff('allEnemies', 'debuff_burn')] },
+        { name: '经曜普照', description: '战斗开始时，全体友方获得护盾与控制免疫2回合。', effects: [buff('allAllies', 'buff_shield', 1, 2), buff('allAllies', 'buff_control_immunity', 1, 2)] },
+    ]),
+    defineUnit('ally_23_ink_pact_chess_master', '墨契棋圣', [
+        { name: '墨子落盘', description: '造成100%攻击伤害，并减速2回合。', effects: [damage('singleEnemy', 1), buff('singleEnemy', 'debuff_slow', 1, 2)] },
+        { name: '落子封脉', description: '造成115%攻击伤害，降低攻击并沉默2回合。', effects: [damage('singleEnemy', 1.15), buff('singleEnemy', 'debuff_attack_down', 1, 2), buff('singleEnemy', 'debuff_silence', 1, 2)] },
+        { name: '天元棋阵', description: '对全体敌人造成120%攻击伤害并减速，25%概率眩晕。', effects: [damage('allEnemies', 1.2), buff('allEnemies', 'debuff_slow', 1, 2), buff('allEnemies', 'debuff_stun', 0.25, 1)] },
+        { name: '棋局先手', description: '战斗开始时自身获得迅捷，全体友方获得暴击提升3回合。', effects: [buff('self', 'buff_haste', 1, 3), buff('allAllies', 'buff_critical_up', 1, 3)] },
+    ]),
+    defineUnit('ally_24_frost_whale_conch_herald', '霜鲸螺使', [
+        { name: '霜涛音', description: '造成100%攻击伤害，并减速2回合。', effects: [damage('singleEnemy', 1), buff('singleEnemy', 'debuff_slow', 1, 2)] },
+        { name: '鲸歌回潮', description: '治疗全体友方，并附加持续恢复2回合。', effects: [heal('allAllies', 0.7, 0.04), buff('allAllies', 'buff_regeneration', 1, 2)] },
+        { name: '霜鲸啸海', description: '对全体敌人造成125%攻击伤害，降低攻击并有35%概率冰冻。', effects: [damage('allEnemies', 1.25), buff('allEnemies', 'debuff_attack_down', 1, 2), buff('allEnemies', 'debuff_freeze', 0.35, 1)] },
+        { name: '潮息共鸣', description: '战斗开始时，全体友方获得持续恢复与防御提升3回合。', effects: [buff('allAllies', 'buff_regeneration', 1, 3), buff('allAllies', 'buff_defense_up', 1, 3)] },
+    ]),
+    defineUnit('ally_25_vermilion_bell_dancer', '朱雀铃舞', [
+        { name: '铃焰舞', description: '造成105%攻击伤害，并施加灼烧。', effects: [damage('singleEnemy', 1.05), buff('singleEnemy', 'debuff_burn')] },
+        { name: '朱铃振奋', description: '全体友方获得攻击提升与迅捷2回合。', effects: [buff('allAllies', 'buff_attack_up', 1, 2), buff('allAllies', 'buff_haste', 1, 2)] },
+        { name: '朱雀燎原', description: '对全体敌人造成135%攻击伤害，并施加2层灼烧。', effects: [damage('allEnemies', 1.35), buff('allEnemies', 'debuff_burn', 1, 2, 2)] },
+        { name: '涅槃铃音', description: '生命首次低于50%时获得1回合无敌并大量恢复生命。', trigger: 'healthBelow50', effects: [buff('self', 'buff_invincible', 1, 1), heal('self', 1.4, 0.12)] },
+    ]),
+    defineUnit('ally_26_azure_luan_paper_artisan', '青鸾纸匠', [
+        { name: '青羽纸刃', description: '造成105%攻击伤害，30%概率致盲。', effects: [damage('singleEnemy', 1.05), buff('singleEnemy', 'debuff_blind', 0.3, 2)] },
+        { name: '折纸灵卫', description: '为生命最低友方附加强化护盾与防御提升。', effects: [buff('lowestHpAlly', 'buff_shield', 1, 2, 1, 1.4), buff('lowestHpAlly', 'buff_defense_up', 1, 2)] },
+        { name: '万纸青鸾', description: '对全体敌人造成125%伤害，驱散1个增益并减速。', effects: [damage('allEnemies', 1.25), dispel('allEnemies', 1), buff('allEnemies', 'debuff_slow', 1, 2)] },
+        { name: '妙纸护生', description: '战斗开始时，全体友方获得护盾与持续恢复2回合。', effects: [buff('allAllies', 'buff_shield', 1, 2), buff('allAllies', 'buff_regeneration', 1, 2)] },
+    ]),
+    defineUnit('ally_27_celestial_mirror_magistrate', '天镜判官', [
+        { name: '镜光裁断', description: '造成110%攻击伤害。', effects: [damage('singleEnemy', 1.1)] },
+        { name: '照罪天镜', description: '攻击最高攻击敌人，造成135%伤害并降低攻击与防御。', effects: [damage('enemyHighestAttack', 1.35), buff('enemyHighestAttack', 'debuff_attack_down', 1, 2), buff('enemyHighestAttack', 'debuff_defense_down', 1, 2)] },
+        { name: '天镜明鉴', description: '对全体敌人造成120%伤害，驱散2个增益并有35%概率沉默。', effects: [damage('allEnemies', 1.2), dispel('allEnemies', 2), buff('allEnemies', 'debuff_silence', 0.35, 2)] },
+        { name: '明镜无尘', description: '战斗开始时，全体友方获得控制免疫和暴击提升3回合。', effects: [buff('allAllies', 'buff_control_immunity', 1, 3), buff('allAllies', 'buff_critical_up', 1, 3)] },
+    ]),
+    defineUnit('ally_28_soul_stitch_embroiderer', '缝魂绣娘', [
+        { name: '银针引魂', description: '造成95%攻击伤害，并施加流血。', effects: [damage('singleEnemy', 0.95), buff('singleEnemy', 'debuff_bleed')] },
+        { name: '缝魂续命', description: '大量治疗生命最低友方，并净化2个减益。', effects: [heal('lowestHpAlly', 1.4, 0.1), cleanse('lowestHpAlly', 2)] },
+        { name: '千丝回魂', description: '治疗全体友方，并附加持续恢复与护盾。', effects: [heal('allAllies', 0.8, 0.05), buff('allAllies', 'buff_regeneration', 1, 2), buff('allAllies', 'buff_shield', 1, 2)] },
+        { name: '绣命纹', description: '生命首次低于50%时恢复生命并获得1回合无敌。', trigger: 'healthBelow50', effects: [heal('self', 1.5, 0.12), buff('self', 'buff_invincible', 1, 1)] },
+    ]),
 
     defineUnit('enemy_01_horned_swordsman', '角刃妖兵', [
         { name: '角刃斩', description: '造成100%攻击伤害，施加1层流血。', effects: [damage('singleEnemy', 1), buff('singleEnemy', 'debuff_bleed')] },
@@ -295,6 +355,36 @@ const UNIT_SKILL_LIST: readonly (readonly BattleSkillConfig[])[] = [
         { name: '百傩唤魂', description: '对全体敌人造成125%攻击伤害，40%概率睡眠并沉默。', effects: [damage('allEnemies', 1.25), buff('allEnemies', 'debuff_sleep', 0.4, 2), buff('allEnemies', 'debuff_silence', 1, 2)] },
         { name: '傩王敕令', description: '战斗开始时，全体友方获得攻击提升、坚韧和控制免疫3回合。', effects: [buff('allAllies', 'buff_attack_up', 1, 3), buff('allAllies', 'buff_tenacity', 1, 3), buff('allAllies', 'buff_control_immunity', 1, 3)] },
     ]),
+    defineUnit('enemy_18_abyssal_spiral_shell_emperor', '深渊螺皇', [
+        { name: '旋壳撞', description: '造成110%攻击伤害，并降低防御2回合。', effects: [damage('singleEnemy', 1.1), buff('singleEnemy', 'debuff_defense_down', 1, 2)] },
+        { name: '渊潮甲', description: '自身获得强化护盾、反击与防御提升3回合。', effects: [buff('self', 'buff_shield', 1, 3, 1, 1.5), buff('self', 'buff_counter', 1, 3), buff('self', 'buff_defense_up', 1, 3)] },
+        { name: '深渊涡流', description: '对全体敌人造成125%伤害，施加减速与持续伤害。', effects: [damage('allEnemies', 1.25), buff('allEnemies', 'debuff_slow', 1, 2), buff('allEnemies', 'debuff_damage_over_time')] },
+        { name: '螺皇威压', description: '战斗开始时获得防御提升、坚韧和控制免疫4回合。', effects: [buff('self', 'buff_defense_up', 1, 4), buff('self', 'buff_tenacity', 1, 4), buff('self', 'buff_control_immunity', 1, 4)] },
+    ]),
+    defineUnit('enemy_19_molten_prison_centipede', '熔狱蜈皇', [
+        { name: '熔颚噬', description: '造成105%攻击伤害，并施加灼烧。', effects: [damage('singleEnemy', 1.05), buff('singleEnemy', 'debuff_burn')] },
+        { name: '狱链盘杀', description: '造成140%攻击伤害，施加流血并有30%概率眩晕。', effects: [damage('singleEnemy', 1.4), buff('singleEnemy', 'debuff_bleed'), buff('singleEnemy', 'debuff_stun', 0.3, 1)] },
+        { name: '百足熔狱', description: '对全体敌人造成130%伤害，施加2层灼烧并减速。', effects: [damage('allEnemies', 1.3), buff('allEnemies', 'debuff_burn', 1, 2, 2), buff('allEnemies', 'debuff_slow', 1, 2)] },
+        { name: '熔狱甲壳', description: '战斗开始时获得攻击、防御提升与反击3回合。', effects: [buff('self', 'buff_attack_up', 1, 3), buff('self', 'buff_defense_up', 1, 3), buff('self', 'buff_counter', 1, 3)] },
+    ]),
+    defineUnit('enemy_20_cloud_wing_manta_demon', '云翼魟魔', [
+        { name: '云翼切', description: '造成105%攻击伤害，30%概率致盲。', effects: [damage('singleEnemy', 1.05), buff('singleEnemy', 'debuff_blind', 0.3, 2)] },
+        { name: '御风俯冲', description: '随机攻击2名敌人，各造成135%伤害并减速。', effects: [damage('randomEnemies2', 1.35), buff('randomEnemies2', 'debuff_slow', 1, 2)] },
+        { name: '云海倾覆', description: '对全体敌人造成125%伤害并致盲，30%概率睡眠。', effects: [damage('allEnemies', 1.25), buff('allEnemies', 'debuff_blind', 1, 2), buff('allEnemies', 'debuff_sleep', 0.3, 2)] },
+        { name: '流云之躯', description: '战斗开始时获得迅捷、暴击提升与控制免疫3回合。', effects: [buff('self', 'buff_haste', 1, 3), buff('self', 'buff_critical_up', 1, 3), buff('self', 'buff_control_immunity', 1, 3)] },
+    ]),
+    defineUnit('enemy_21_radiant_crystal_stag_king', '曜晶鹿王', [
+        { name: '晶角突', description: '造成110%攻击伤害。', effects: [damage('singleEnemy', 1.1)] },
+        { name: '曜晶屏障', description: '全体友方获得护盾与防御提升2回合。', effects: [buff('allAllies', 'buff_shield', 1, 2), buff('allAllies', 'buff_defense_up', 1, 2)] },
+        { name: '辉林审判', description: '对全体敌人造成130%伤害，35%概率眩晕，并治疗全体友方。', effects: [damage('allEnemies', 1.3), buff('allEnemies', 'debuff_stun', 0.35, 1), heal('allAllies', 0.55, 0.03)] },
+        { name: '鹿王灵域', description: '战斗开始时，全体友方获得攻击提升与控制免疫3回合。', effects: [buff('allAllies', 'buff_attack_up', 1, 3), buff('allAllies', 'buff_control_immunity', 1, 3)] },
+    ]),
+    defineUnit('enemy_22_dream_eater_tapir_king', '食梦貘王', [
+        { name: '食梦鼻击', description: '造成95%攻击伤害，30%概率使目标睡眠。', effects: [damage('singleEnemy', 0.95), buff('singleEnemy', 'debuff_sleep', 0.3, 2)] },
+        { name: '梦魇汲取', description: '造成130%攻击伤害并沉默目标，同时恢复自身生命。', effects: [damage('singleEnemy', 1.3), buff('singleEnemy', 'debuff_silence', 1, 2), heal('self', 0.7, 0.05)] },
+        { name: '吞梦迷域', description: '对全体敌人造成115%伤害，降低攻击并有45%概率睡眠。', effects: [damage('allEnemies', 1.15), buff('allEnemies', 'debuff_attack_down', 1, 2), buff('allEnemies', 'debuff_sleep', 0.45, 2)] },
+        { name: '紫梦烟岚', description: '战斗开始时获得护盾、迅捷与持续恢复3回合。', effects: [buff('self', 'buff_shield', 1, 3), buff('self', 'buff_haste', 1, 3), buff('self', 'buff_regeneration', 1, 3)] },
+    ]),
 ];
 
 function createSkillRecord(): Record<string, BattleSkillConfig> {
@@ -327,14 +417,14 @@ export function getUnitBattleSkills(unitId: string): readonly BattleSkillConfig[
     return BATTLE_UNIT_SKILL_CONFIG[unitId] ?? [];
 }
 
-/** 启动时或测试时调用，保证 35 个单位均有4个技能且 ID 不重复。 */
+/** 启动时或测试时调用，保证 50 个单位均有4个技能且 ID 不重复。 */
 export function validateBattleSkillConfig(): void {
     const allSkills = Object.values(BATTLE_SKILL_CONFIG);
-    if (allSkills.length !== 140) {
-        throw new Error(`Expected 140 battle skills, received: ${allSkills.length}`);
+    if (allSkills.length !== 200) {
+        throw new Error(`Expected 200 battle skills, received: ${allSkills.length}`);
     }
-    if (Object.keys(BATTLE_UNIT_SKILL_CONFIG).length !== 35) {
-        throw new Error('Expected skill loadouts for 35 battle units.');
+    if (Object.keys(BATTLE_UNIT_SKILL_CONFIG).length !== 50) {
+        throw new Error('Expected skill loadouts for 50 battle units.');
     }
     for (const [unitId, skills] of Object.entries(BATTLE_UNIT_SKILL_CONFIG)) {
         if (skills.length !== 4 || skills.some((skill, index) => skill.slot !== index + 1)) {
