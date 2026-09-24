@@ -13,6 +13,9 @@ export enum UIID {
     GrowthFund = 9,
     CumulativeRechargeRewards = 10,
     Battle = 11,
+    Team = 12,
+    Summon = 13,
+    Task = 14,
 }
 
 /** 路径相对于对应的 Asset Bundle，关闭时保留页面供下次复用。 */
@@ -34,6 +37,9 @@ export const UIConfigData: Record<number, UIConfig> = {
     [UIID.GrowthFund]: popupConfig('growthFund'),
     [UIID.CumulativeRechargeRewards]: popupConfig('cumulativeRechargeRewards'),
     [UIID.Battle]: { layer: LayerType.UI, bundle: 'battle', prefab: 'prefab/battle', destroy: false },
+    [UIID.Team]: { layer: LayerType.UI, bundle: 'team', prefab: 'prefab/team', destroy: false },
+    [UIID.Summon]: { layer: LayerType.UI, bundle: 'team', prefab: 'prefab/summon', destroy: false },
+    [UIID.Task]: { layer: LayerType.UI, bundle: 'team', prefab: 'prefab/task', destroy: false },
 };
 
 function popupConfig(prefab: string): UIConfig {

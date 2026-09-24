@@ -1,5 +1,7 @@
+import { warn } from 'cc';
 import { GameStorage } from '../../core/GameStorage';
 import { ItemAmount, ItemService } from '../item/ItemService';
+import { TaskService } from '../task/TaskService';
 import { BattleStageConfig, DEFAULT_BATTLE_STAGE_ID } from './BattleStageConfig';
 
 export interface BattleStageProgress {
@@ -47,12 +49,14 @@ function aggregateRewards(items: readonly ItemAmount[]): ItemAmount[] {
 
 export class BattleRewardService {
     private readonly _items: ItemService;
+    private readonly _tasks: TaskService;
 
     constructor(
         private readonly _storageKey = BATTLE_PROGRESS_STORAGE_KEY,
         itemStorageKey?: string,
     ) {
         this._items = new ItemService(itemStorageKey);
+        this._tasks = new TaskService(undefined, itemStorageKey);
     }
 
     getProgress(): Readonly<BattleProgressData> {
@@ -102,6 +106,17 @@ export class BattleRewardService {
             // 两份本地存档无法原子提交，进度保存失败时撤销刚发放的奖励。
             this._items.subtractMany(rewards);
             throw error;
+        }
+
+        try {
+            this._tasks.reportMany([
+                { event: 'battleWin', amount: 1 },
+                { event: 'stageClear', amount: 1 },
+            ]);
+        }
+        catch (error) {
+            // 战斗奖励已经落盘，任务统计失败不应让结算界面误判整场战斗失败。
+            warn(`[BattleReward] 任务进度上报失败：${String(error)}`);
         }
 
         return { granted: true, victory: true, firstClear, duplicate: false, rewards };

@@ -1,16 +1,39 @@
-import { _decorator, BlockInputEvents, Component, EventTouch, Label, Node } from 'cc';
+import {
+    _decorator,
+    BlockInputEvents,
+    Component,
+    director,
+    EventTouch,
+    Label,
+    Node,
+    Sprite,
+    warn,
+} from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
 import { RoleProfession, RoleType } from '../../core/GameEnum';
+import { GAME_EVENT_RESOURCE_CHANGED } from '../../core/GameEvents';
 import {
     PlayerRoleInstance,
     getPlayerRoleCurrentAttribute,
     loadPlayerRoleData,
 } from '../../model/PlayerRoleData';
+import { resolveRoleConfigId } from '../battle/BattleRosterService';
+import { getUnitBattleSkills } from '../battle/BattleSkillConfig';
 import {
     SCROLL_HORIZONTAL,
     ScrollList,
 } from '../common/VirtualList/ScrollList';
+import { ItemService } from '../item/ItemService';
+import {
+    RoleGrowthService,
+    getRoleLevelLimit,
+    getRoleLevelUpCost,
+    getRoleSkillUpCost,
+    getRoleStarUpCost,
+} from './RoleGrowthService';
+import { TaskService } from '../task/TaskService';
+import { loadSpriteFrameCompat } from '../common/loadSpriteFrameCompat';
 
 const { ccclass, menu } = _decorator;
 
@@ -49,6 +72,12 @@ export class RoleMain extends Component {
     private _scrollList: ScrollList | null = null;
     private _roleItemTemplate: Node | null = null;
     private _backButton: Node | null = null;
+    private readonly _growth = new RoleGrowthService();
+    private readonly _items = new ItemService();
+    private readonly _tasks = new TaskService();
+    private _growthInfoLabel: Label | null = null;
+    private _growthStatusLabel: Label | null = null;
+    private readonly _iconVersions = new WeakMap<Node, number>();
 
     protected onLoad(): void {
         // 全屏页面拦截触摸，避免点击穿透到下方主界面。
@@ -63,6 +92,7 @@ export class RoleMain extends Component {
             this._scrollList.setDelay(0, 0);
             this._scrollList.onItemRender = this.renderRoleItem.bind(this);
         }
+        this.bindGrowthPanel();
     }
 
     protected onEnable(): void {
@@ -109,6 +139,7 @@ export class RoleMain extends Component {
     private renderRoleItem(node: Node, _index: number, role: PlayerRoleInstance): void {
         this.setNodeLabel(node, 'lv', `${role.level}级`);
         this.setStars(findChild(node, 'starLayout'), role.star);
+        this.renderRoleIcon(node, role);
 
         (node as any).__roleInstanceId = role.instanceId;
         node.off(Node.EventType.TOUCH_END, this.onRoleItemClicked, this);
@@ -132,6 +163,8 @@ export class RoleMain extends Component {
             this.setLabel('bg/bg/roleType/Label', '--');
             this.setBaseAttributeLabels('--', '--', '--', '--');
             this.setStars(findChild(this.node, 'bg/title/starLayout'), 0);
+            if (this._growthInfoLabel) this._growthInfoLabel.string = '暂无角色，请先前往召唤';
+            if (this._growthStatusLabel) this._growthStatusLabel.string = '';
             return;
         }
 
@@ -139,10 +172,12 @@ export class RoleMain extends Component {
         const attribute = getPlayerRoleCurrentAttribute(role);
         const professionName = PROFESSION_NAMES[role.profession];
 
-        // 角色静态表接入后，可将此处替换为配置中的角色名称。
-        this.setLabel('bg/title/name', `${professionName}·角色${role.roleId}`);
+        const configId = resolveRoleConfigId(role);
+        const roleName = configId ? getUnitBattleSkills(configId)[0]?.unitName : null;
+        this.setLabel('bg/title/name', `${professionName}·${roleName ?? `角色${role.roleId}`}`);
         this.setLabel('bg/title/lv', `${role.level}级`);
-        this.setLabel('bg/title/power', '--');
+        const power = Math.round(attribute.hp + attribute.attack * 5 + attribute.defense * 4 + attribute.speed * 10);
+        this.setLabel('bg/title/power', String(power));
         this.setLabel('bg/bg/roleType/Label', ROLE_TYPE_NAMES[role.roleType]);
         this.setBaseAttributeLabels(
             String(attribute.hp),
@@ -151,6 +186,47 @@ export class RoleMain extends Component {
             String(attribute.speed),
         );
         this.setStars(findChild(this.node, 'bg/title/starLayout'), role.star);
+        this.refreshGrowthInfo(role);
+    }
+
+    private bindGrowthPanel(): void {
+        const panel = findChild(this.node, 'growthPanel');
+        this._growthInfoLabel = panel?.getChildByName('growthInfo')?.getComponent(Label) ?? null;
+        this._growthStatusLabel = panel?.getChildByName('growthStatus')?.getComponent(Label) ?? null;
+        panel?.getChildByName('btn_level_up')?.on(Node.EventType.TOUCH_END, () => this.executeGrowth('level'), this);
+        panel?.getChildByName('btn_star_up')?.on(Node.EventType.TOUCH_END, () => this.executeGrowth('star'), this);
+        panel?.getChildByName('btn_skill_up')?.on(Node.EventType.TOUCH_END, () => this.executeGrowth('skill'), this);
+        if (!panel || !this._growthInfoLabel || !this._growthStatusLabel) {
+            warn('[RoleMain] 角色养成 prefab 层级不完整，请检查 growthPanel。');
+        }
+    }
+
+    private executeGrowth(type: 'level' | 'star' | 'skill'): void {
+        if (!this._selectedInstanceId) return;
+        const result = type === 'level'
+            ? this._growth.levelUp(this._selectedInstanceId)
+            : type === 'star'
+                ? this._growth.starUp(this._selectedInstanceId)
+                : this._growth.skillUp(this._selectedInstanceId);
+        if (this._growthStatusLabel) this._growthStatusLabel.string = result.message;
+        if (result.success) {
+            director.emit(GAME_EVENT_RESOURCE_CHANGED);
+            this._tasks.report(type === 'level' ? 'roleLevelUp' : type === 'star' ? 'roleStarUp' : 'roleSkillUp');
+        }
+        this.refresh();
+    }
+
+    private refreshGrowthInfo(role: PlayerRoleInstance): void {
+        if (!this._growthInfoLabel) return;
+        this._items.reload();
+        const levelCost = getRoleLevelUpCost(role);
+        const starCost = getRoleStarUpCost(role);
+        const skillCost = getRoleSkillUpCost(role);
+        this._growthInfoLabel.string = [
+            `等级 ${role.level}/${getRoleLevelLimit(role.star)}　技能 Lv.${role.skillLevel ?? 1}/${role.star * 2}`,
+            `升级：金币${levelCost[0].amount}+聚气丹${levelCost[1].amount}　升星：金币${starCost[0].amount}+仙晶${starCost[1].amount}`,
+            `研习：金币${skillCost[0].amount}+仙晶${skillCost[1].amount}　持有：金币${this._items.getAmount('currency.gold')} 仙晶${this._items.getAmount('currency.crystal')} 聚气丹${this._items.getAmount('consumable.qi-pill')}`,
+        ].join('\n');
     }
 
     private setBaseAttributeLabels(
@@ -187,6 +263,22 @@ export class RoleMain extends Component {
     private setStars(starLayout: Node | null, star: number): void {
         starLayout?.children.forEach((child, index) => {
             child.active = index < star;
+        });
+    }
+
+    private renderRoleIcon(item: Node, role: PlayerRoleInstance): void {
+        const iconNode = findChild(item, 'Mask/roleIcon');
+        const sprite = iconNode?.getComponent(Sprite) ?? null;
+        if (!iconNode || !sprite) return;
+        const version = (this._iconVersions.get(iconNode) ?? 0) + 1;
+        this._iconVersions.set(iconNode, version);
+        sprite.spriteFrame = null;
+        const configId = resolveRoleConfigId(role);
+        if (!configId) return;
+        const slug = configId.replace(/^ally_\d+_/, '');
+        loadSpriteFrameCompat(`gui/common/roleIcon/character_${slug}/spriteFrame`, (error, frame) => {
+            if (error || !frame || !iconNode.isValid || this._iconVersions.get(iconNode) !== version) return;
+            sprite.spriteFrame = frame;
         });
     }
 

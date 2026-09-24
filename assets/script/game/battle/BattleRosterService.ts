@@ -1,4 +1,9 @@
 import {
+    PlayerMonsterInstance,
+    getPlayerMonsterCurrentAttribute,
+    loadPlayerMonsterData,
+} from '../../model/PlayerMonsterData';
+import {
     PlayerRoleInstance,
     getPlayerRoleCurrentAttribute,
     loadPlayerRoleData,
@@ -16,7 +21,7 @@ export interface BattleOpenArgs {
     stageId?: string;
     /** 从主界面进入时先展示关卡选择，而不是直接开战。 */
     selectStage?: boolean;
-    /** 阵容界面传入角色实例 ID，顺序即站位顺序，最多5名。 */
+    /** 阵容界面传入角色或怪物实例 ID，顺序即站位顺序，最多5名。 */
     allyInstanceIds?: readonly string[];
     /** 调试、剧情或服务器下发时可直接覆盖玩家阵容。 */
     allies?: readonly BattleUnitConfig[];
@@ -35,6 +40,10 @@ export interface PlayerBattleFormationData {
     version: 1;
     allyInstanceIds: string[];
 }
+
+type OwnedFormationUnit =
+    | { kind: 'role'; instance: PlayerRoleInstance }
+    | { kind: 'monster'; instance: PlayerMonsterInstance };
 
 export const BATTLE_FORMATION_STORAGE_KEY = 'fangzhi.battle-formation-data';
 
@@ -71,7 +80,7 @@ const ALLY_CONFIG_IDS = [
 
 const ALLY_CONFIG_ID_SET = new Set<string>(ALLY_CONFIG_IDS);
 
-function resolveRoleConfigId(role: PlayerRoleInstance): string | null {
+export function resolveRoleConfigId(role: PlayerRoleInstance): string | null {
     const rawId = String(role.roleId);
     if (ALLY_CONFIG_ID_SET.has(rawId)) return rawId;
     if (!/^\d+$/.test(rawId)) return null;
@@ -79,25 +88,51 @@ function resolveRoleConfigId(role: PlayerRoleInstance): string | null {
     return ALLY_CONFIG_IDS[index] ?? null;
 }
 
-function createOwnedUnit(role: PlayerRoleInstance): BattleUnitConfig | null {
+function createOwnedRoleUnit(role: PlayerRoleInstance): BattleUnitConfig | null {
     const configId = resolveRoleConfigId(role);
     if (!configId) return null;
     const skills = getUnitBattleSkills(configId);
     if (skills.length !== 4) return null;
     const current = getPlayerRoleCurrentAttribute(role);
+    const skillLevel = Math.max(1, role.skillLevel ?? 1);
+    const skillPowerRate = 1 + (skillLevel - 1) * 0.03;
     const slug = configId.replace(/^ally_\d+_/, '');
     return {
         configId,
         name: skills[0].unitName,
         camp: 'ally',
-        iconPath: `gui/common/roleIcon/character_${slug}/spriteFrame`,
+        iconPath: 'gui/common/roleIcon/character_' + slug + '/spriteFrame',
         animation: { sourceFacing: 'right' },
         attributes: {
             maxHp: current.hp,
-            attack: current.attack,
+            attack: Math.round(current.attack * skillPowerRate),
             defense: current.defense,
             speed: current.speed,
             critRate: Math.min(0.2, 0.03 + role.star * 0.025),
+            hitRate: 1,
+        },
+    };
+}
+
+function createOwnedMonsterUnit(monster: PlayerMonsterInstance): BattleUnitConfig | null {
+    const configId = monster.monsterId;
+    const skills = getUnitBattleSkills(configId);
+    if (!configId.startsWith('enemy_') || skills.length !== 4) return null;
+    const current = getPlayerMonsterCurrentAttribute(monster);
+    const skillLevel = Math.max(1, monster.skillLevel ?? 1);
+    const skillPowerRate = 1 + (skillLevel - 1) * 0.03;
+    return {
+        configId,
+        name: skills[0].unitName,
+        camp: 'ally',
+        iconPath: 'gui/common/roleIcon/' + configId.replace(/^enemy_/, 'monster_') + '/spriteFrame',
+        animation: { sourceFacing: 'right' },
+        attributes: {
+            maxHp: current.hp,
+            attack: Math.round(current.attack * skillPowerRate),
+            defense: current.defense,
+            speed: current.speed,
+            critRate: Math.min(0.2, 0.03 + monster.star * 0.025),
             hitRate: 1,
         },
     };
@@ -139,13 +174,16 @@ export function saveBattleFormation(allyInstanceIds: readonly string[]): void {
     });
 }
 
-function selectOwnedRoles(instanceIds?: readonly string[]): PlayerRoleInstance[] {
-    const roles = loadPlayerRoleData().roles;
+function selectOwnedUnits(instanceIds?: readonly string[]): OwnedFormationUnit[] {
+    const units: OwnedFormationUnit[] = [
+        ...loadPlayerRoleData().roles.map((instance): OwnedFormationUnit => ({ kind: 'role', instance })),
+        ...loadPlayerMonsterData().monsters.map((instance): OwnedFormationUnit => ({ kind: 'monster', instance })),
+    ];
     const selectedIds = instanceIds?.length
         ? instanceIds
         : loadBattleFormation().allyInstanceIds;
     if (selectedIds.length) {
-        const byId = new Map(roles.map((role) => [role.instanceId, role]));
+        const byId = new Map(units.map((unit) => [unit.instance.instanceId, unit]));
         const used = new Set<string>();
         const selected = selectedIds
             .filter((id) => {
@@ -154,17 +192,17 @@ function selectOwnedRoles(instanceIds?: readonly string[]): PlayerRoleInstance[]
                 return true;
             })
             .map((id) => byId.get(id))
-            .filter((role): role is PlayerRoleInstance => !!role)
+            .filter((unit): unit is OwnedFormationUnit => !!unit)
             .slice(0, 5);
         if (selected.length) return selected;
     }
-    return roles
+    return units
         .slice()
         .sort((a, b) => (
-            b.star - a.star
-            || b.level - a.level
-            || a.obtainedAt - b.obtainedAt
-            || a.instanceId.localeCompare(b.instanceId)
+            b.instance.star - a.instance.star
+            || b.instance.level - a.instance.level
+            || a.instance.obtainedAt - b.instance.obtainedAt
+            || a.instance.instanceId.localeCompare(b.instance.instanceId)
         ))
         .slice(0, 5);
 }
@@ -181,8 +219,10 @@ function resolveAllies(args: BattleOpenArgs): {
         return { allies, usingFallback: false };
     }
 
-    const owned = selectOwnedRoles(args.allyInstanceIds)
-        .map(createOwnedUnit)
+    const owned = selectOwnedUnits(args.allyInstanceIds)
+        .map((unit) => unit.kind === 'role'
+            ? createOwnedRoleUnit(unit.instance)
+            : createOwnedMonsterUnit(unit.instance))
         .filter((unit): unit is BattleUnitConfig => !!unit);
     if (owned.length) return { allies: owned, usingFallback: false };
 
@@ -200,7 +240,7 @@ export function resolveBattleSession(args: BattleOpenArgs = {}): ResolvedBattleS
     }
     for (const unit of allies) {
         if (getUnitBattleSkills(unit.configId).length !== 4) {
-            throw new Error(`[BattleRoster] ${unit.configId} 未配置完整技能。`);
+            throw new Error('[BattleRoster] ' + unit.configId + ' 未配置完整技能。');
         }
     }
     return {

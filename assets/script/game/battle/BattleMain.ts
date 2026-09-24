@@ -8,9 +8,7 @@ import {
     Label,
     Node,
     ProgressBar,
-    resources,
     Sprite,
-    SpriteFrame,
     UITransform,
     VerticalTextAlignment,
     warn,
@@ -18,6 +16,7 @@ import {
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
 import { GameStorage } from '../../core/GameStorage';
+import { loadSpriteFrameCompat } from '../common/loadSpriteFrameCompat';
 import { BattleAnimationSequence } from './BattleAnimationConfig';
 import { BattleAnimationPlayer } from './BattleAnimationPlayer';
 import { BATTLE_BUFF_CONFIG } from './BattleBuffConfig';
@@ -712,7 +711,7 @@ export class BattleMain extends Component {
                 );
             }
             portraitLoads.push(new Promise((resolve) => {
-                resources.load(config.iconPath, SpriteFrame, (error, spriteFrame) => {
+                loadSpriteFrameCompat(config.iconPath, (error, spriteFrame) => {
                     if (error || !spriteFrame) {
                         warn(`[BattleMain] 角色图标加载失败：${config.iconPath}`);
                         resolve();

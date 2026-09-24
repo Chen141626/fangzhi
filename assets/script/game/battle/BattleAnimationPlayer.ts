@@ -620,9 +620,9 @@ export class BattleAnimationPlayer {
                         resolve(null);
                         return;
                     }
-                    // 新导入的死亡帧目前是 Texture2D，运行时包装为完整画布 SpriteFrame。
-                    resources.load(frameRoot, Texture2D, (textureError, texture) => {
-                        if (textureError || !texture) {
+                    // type=texture 的图片在 resources 中注册为 /texture 子资源；同时兼容旧版直连路径。
+                    this.loadResourceTexture([`${frameRoot}/texture`, frameRoot]).then((texture) => {
+                        if (!texture) {
                             if (reportMissing) warn(`[BattleAnimation] 序列帧加载失败：${frameRoot}`);
                             resolve(null);
                             return;
@@ -637,6 +637,18 @@ export class BattleAnimationPlayer {
             if (frame) result.push(frame);
         }
         return result;
+    }
+
+    private async loadResourceTexture(paths: readonly string[]): Promise<Texture2D | null> {
+        for (const path of paths) {
+            const texture = await new Promise<Texture2D | null>((resolve) => {
+                resources.load(path, Texture2D, (error, asset) => {
+                    resolve(error || !asset ? null : asset);
+                });
+            });
+            if (texture) return texture;
+        }
+        return null;
     }
 
     private async loadBundleSequence(

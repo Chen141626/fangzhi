@@ -18,6 +18,8 @@ export interface PlayerRoleInstance {
     roleType: RoleType;
     profession: RoleProfession;
     level: number;
+    /** 全技能研习等级；旧存档缺省时按1级处理。 */
+    skillLevel?: number;
     /** 召唤时生成并永久保存的 1 级基础属性。 */
     baseAttribute: RoleBaseAttribute;
     /** 获得时间，Unix 毫秒时间戳。 */

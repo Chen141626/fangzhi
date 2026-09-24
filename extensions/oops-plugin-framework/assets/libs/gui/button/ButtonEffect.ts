@@ -4,7 +4,7 @@
  * @LastEditors: dgflash
  * @LastEditTime: 2023-02-09 10:54:28
  */
-import { Animation, AnimationClip, EventTouch, Node, Sprite, _decorator } from "cc";
+import { Animation, AnimationClip, EventTouch, Node, Sprite, Tween, Vec3, _decorator, tween } from "cc";
 import { oops } from "../../../core/Oops";
 import ButtonSimple from "./ButtonSimple";
 
@@ -19,7 +19,11 @@ export default class ButtonEffect extends ButtonSimple {
     })
     disabledEffect: boolean = false;
 
-    private anim!: Animation;
+    private anim: Animation | null = null;
+    private startClipName = "";
+    private endClipName = "";
+    private baseScale = new Vec3(1, 1, 1);
+    private scaleTween: Tween<Node> | null = null;
 
     /** 按钮禁用效果 */
     get grayscale(): boolean {
@@ -32,13 +36,21 @@ export default class ButtonEffect extends ButtonSimple {
     }
 
     onLoad() {
-        this.anim = this.node.addComponent(Animation);
-
-        var ac_start: AnimationClip = oops.res.get("common/anim/button_scale_start", AnimationClip)!;
-        var ac_end: AnimationClip = oops.res.get("common/anim/button_scale_end", AnimationClip)!;
-        this.anim.defaultClip = ac_start;
-        this.anim.createState(ac_start, ac_start?.name);
-        this.anim.createState(ac_end, ac_end?.name);
+        this.baseScale.set(this.node.scale);
+        const ac_start = oops.res.get("common/anim/button_scale_start", AnimationClip);
+        const ac_end = oops.res.get("common/anim/button_scale_end", AnimationClip);
+        if (ac_start || ac_end) {
+            this.anim = this.node.getComponent(Animation) ?? this.node.addComponent(Animation);
+            if (ac_start) {
+                this.startClipName = ac_start.name;
+                this.anim.defaultClip = ac_start;
+                this.anim.createState(ac_start, this.startClipName);
+            }
+            if (ac_end) {
+                this.endClipName = ac_end.name;
+                this.anim.createState(ac_end, this.endClipName);
+            }
+        }
 
         this.node.on(Node.EventType.TOUCH_START, this.onTouchtStart, this);
 
@@ -47,13 +59,15 @@ export default class ButtonEffect extends ButtonSimple {
 
     protected onTouchtStart(event: EventTouch) {
         if (!this.disabledEffect) {
-            this.anim.play("button_scale_start");
+            if (this.anim && this.startClipName) this.anim.play(this.startClipName);
+            else this.playScaleFallback(0.94, 0.06);
         }
     }
 
     protected onTouchEnd(event: EventTouch) {
         if (!this.disabledEffect) {
-            this.anim.play("button_scale_end");
+            if (this.anim && this.endClipName) this.anim.play(this.endClipName);
+            else this.playScaleFallback(1, 0.08);
         }
 
         super.onTouchEnd(event);
@@ -61,7 +75,22 @@ export default class ButtonEffect extends ButtonSimple {
 
 
     onDestroy() {
+        this.scaleTween?.stop();
+        this.scaleTween = null;
         this.node.off(Node.EventType.TOUCH_START, this.onTouchtStart, this);
         super.onDestroy();
+    }
+
+    private playScaleFallback(scale: number, duration: number) {
+        this.scaleTween?.stop();
+        const target = new Vec3(
+            this.baseScale.x * scale,
+            this.baseScale.y * scale,
+            this.baseScale.z,
+        );
+        this.scaleTween = tween(this.node)
+            .to(duration, { scale: target }, { easing: "quadOut" })
+            .call(() => { this.scaleTween = null; })
+            .start();
     }
 }

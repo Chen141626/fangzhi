@@ -6,6 +6,13 @@ import {
 } from '../../config/FairyScrollSummonConfig';
 import { RoleStar, createRoleBaseAttribute } from '../../config/RoleBaseAttributeConfig';
 import {
+    PLAYER_MONSTER_STORAGE_KEY,
+    PlayerMonsterData,
+    PlayerMonsterInstance,
+    loadPlayerMonsterData,
+    savePlayerMonsterData,
+} from '../../model/PlayerMonsterData';
+import {
     PLAYER_ROLE_STORAGE_KEY,
     PlayerRoleData,
     PlayerRoleInstance,
@@ -14,9 +21,15 @@ import {
     savePlayerRoleData,
 } from '../../model/PlayerRoleData';
 
-/** 角色静态表中召唤系统所需的字段。 */
 export interface SummonRoleDefinition extends SummonableRole {
     roleId: RoleConfigId;
+    roleType: RoleType;
+    profession: RoleProfession;
+    star: RoleStar;
+}
+
+export interface SummonMonsterDefinition extends SummonableRole {
+    monsterId: string;
     roleType: RoleType;
     profession: RoleProfession;
     star: RoleStar;
@@ -26,6 +39,12 @@ export interface SummonResult {
     scrollType: FairyScrollType;
     star: RoleStar;
     role: PlayerRoleInstance;
+}
+
+export interface SummonMonsterResult {
+    scrollType: FairyScrollType;
+    star: RoleStar;
+    monster: PlayerMonsterInstance;
 }
 
 let instanceSequence = 0;
@@ -38,21 +57,16 @@ function nextRandomIndex(length: number, random: () => number): number {
     return Math.floor(value * length);
 }
 
-function createUniqueInstanceId(existingIds: Set<string>): string {
+function createUniqueInstanceId(existingIds: Set<string>, prefix: 'role' | 'monster'): string {
     let instanceId = '';
     do {
         instanceSequence++;
-        instanceId = `role-${Date.now().toString(36)}-${instanceSequence.toString(36)}`;
+        instanceId = `${prefix}-${Date.now().toString(36)}-${instanceSequence.toString(36)}`;
     } while (existingIds.has(instanceId));
-
     existingIds.add(instanceId);
     return instanceId;
 }
 
-/**
- * 完成一次角色召唤，但不自动写入本地存档。
- * 外部可用于服务器结算，或由 PlayerSummonService 负责记录。
- */
 export function createSummonedRole(
     scrollType: FairyScrollType,
     rolePool: readonly SummonRoleDefinition[],
@@ -61,77 +75,70 @@ export function createSummonedRole(
 ): SummonResult {
     const star = drawSummonStar(scrollType, random);
     const candidates = filterSummonableRoles(rolePool, scrollType, star);
-    if (candidates.length === 0) {
-        throw new Error(`No summonable role for scroll type ${scrollType}, star ${star}.`);
-    }
-
+    if (!candidates.length) throw new Error(`No summonable role for scroll type ${scrollType}, star ${star}.`);
     const definition = candidates[nextRandomIndex(candidates.length, random)];
     const role: PlayerRoleInstance = {
-        instanceId: createUniqueInstanceId(existingIds),
+        instanceId: createUniqueInstanceId(existingIds, 'role'),
         roleId: definition.roleId,
         star: definition.star,
         roleType: definition.roleType,
         profession: definition.profession,
         level: 1,
+        skillLevel: 1,
         baseAttribute: createRoleBaseAttribute(definition.star, definition.roleType, random),
         obtainedAt: Date.now(),
     };
-
-    return {
-        scrollType,
-        star,
-        role,
-    };
+    return { scrollType, star, role };
 }
 
-/**
- * 玩家召唤服务：自动读取角色存档，召唤成功后追加实例并立即保存。
- * 不按 roleId 去重，因此同一角色可被重复获得。
- */
+export function createSummonedMonster(
+    scrollType: FairyScrollType,
+    monsterPool: readonly SummonMonsterDefinition[],
+    existingIds: Set<string> = new Set<string>(),
+    random: () => number = Math.random,
+): SummonMonsterResult {
+    const star = drawSummonStar(scrollType, random);
+    const candidates = filterSummonableRoles(monsterPool, scrollType, star);
+    if (!candidates.length) throw new Error(`No summonable monster for scroll type ${scrollType}, star ${star}.`);
+    const definition = candidates[nextRandomIndex(candidates.length, random)];
+    const monster: PlayerMonsterInstance = {
+        instanceId: createUniqueInstanceId(existingIds, 'monster'),
+        monsterId: definition.monsterId,
+        star: definition.star,
+        roleType: definition.roleType,
+        profession: definition.profession,
+        level: 1,
+        skillLevel: 1,
+        baseAttribute: createRoleBaseAttribute(definition.star, definition.roleType, random),
+        obtainedAt: Date.now(),
+    };
+    return { scrollType, star, monster };
+}
+
 export class PlayerSummonService {
-    private readonly _rolePool: readonly SummonRoleDefinition[];
-    private readonly _storageKey: string;
     private _playerRoleData: PlayerRoleData;
 
     constructor(
-        rolePool: readonly SummonRoleDefinition[],
-        storageKey: string = PLAYER_ROLE_STORAGE_KEY,
+        private readonly _rolePool: readonly SummonRoleDefinition[],
+        private readonly _storageKey: string = PLAYER_ROLE_STORAGE_KEY,
     ) {
-        this._rolePool = rolePool;
-        this._storageKey = storageKey;
-        this._playerRoleData = loadPlayerRoleData(storageKey);
+        this._playerRoleData = loadPlayerRoleData(_storageKey);
     }
 
-    get roles(): readonly PlayerRoleInstance[] {
-        return this._playerRoleData.roles;
-    }
+    get roles(): readonly PlayerRoleInstance[] { return this._playerRoleData.roles; }
+    get data(): Readonly<PlayerRoleData> { return this._playerRoleData; }
 
-    get data(): Readonly<PlayerRoleData> {
-        return this._playerRoleData;
-    }
-
-    summon(
-        scrollType: FairyScrollType,
-        random: () => number = Math.random,
-    ): SummonResult {
+    summon(scrollType: FairyScrollType, random: () => number = Math.random): SummonResult {
         return this.summonMany(scrollType, 1, random)[0];
     }
 
-    summonMany(
-        scrollType: FairyScrollType,
-        count: number,
-        random: () => number = Math.random,
-    ): SummonResult[] {
-        if (!Number.isInteger(count) || count < 1) {
-            throw new RangeError(`Summon count must be a positive integer, received: ${count}`);
-        }
-
+    summonMany(scrollType: FairyScrollType, count: number, random: () => number = Math.random): SummonResult[] {
+        if (!Number.isInteger(count) || count < 1) throw new RangeError(`Summon count must be positive: ${count}`);
         const existingIds = new Set(this._playerRoleData.roles.map((role) => role.instanceId));
         const results: SummonResult[] = [];
         for (let index = 0; index < count; index++) {
             results.push(createSummonedRole(scrollType, this._rolePool, existingIds, random));
         }
-
         this._playerRoleData.roles.push(...results.map((result) => result.role));
         try {
             savePlayerRoleData(this._playerRoleData, this._storageKey);
@@ -139,11 +146,40 @@ export class PlayerSummonService {
             this._playerRoleData.roles.splice(-results.length, results.length);
             throw error;
         }
-
         return results;
     }
 
-    reload(): void {
-        this._playerRoleData = loadPlayerRoleData(this._storageKey);
+    reload(): void { this._playerRoleData = loadPlayerRoleData(this._storageKey); }
+}
+
+export class PlayerMonsterSummonService {
+    private _playerMonsterData: PlayerMonsterData;
+
+    constructor(
+        private readonly _monsterPool: readonly SummonMonsterDefinition[],
+        private readonly _storageKey: string = PLAYER_MONSTER_STORAGE_KEY,
+    ) {
+        this._playerMonsterData = loadPlayerMonsterData(_storageKey);
     }
+
+    get monsters(): readonly PlayerMonsterInstance[] { return this._playerMonsterData.monsters; }
+
+    summonMany(scrollType: FairyScrollType, count: number, random: () => number = Math.random): SummonMonsterResult[] {
+        if (!Number.isInteger(count) || count < 1) throw new RangeError(`Summon count must be positive: ${count}`);
+        const existingIds = new Set(this._playerMonsterData.monsters.map((monster) => monster.instanceId));
+        const results: SummonMonsterResult[] = [];
+        for (let index = 0; index < count; index++) {
+            results.push(createSummonedMonster(scrollType, this._monsterPool, existingIds, random));
+        }
+        this._playerMonsterData.monsters.push(...results.map((result) => result.monster));
+        try {
+            savePlayerMonsterData(this._playerMonsterData, this._storageKey);
+        } catch (error) {
+            this._playerMonsterData.monsters.splice(-results.length, results.length);
+            throw error;
+        }
+        return results;
+    }
+
+    reload(): void { this._playerMonsterData = loadPlayerMonsterData(this._storageKey); }
 }
