@@ -4,14 +4,17 @@ import {
     BlockInputEvents,
     Color,
     Component,
+    director,
     Label,
     Node,
     Sprite,
     SpriteFrame,
+    UITransform,
     warn,
 } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
+import { GAME_EVENT_FORMATION_CHANGED } from '../../core/GameEvents';
 import { RoleProfession } from '../../core/GameEnum';
 import { getPlayerMonsterCurrentAttribute, loadPlayerMonsterData } from '../../model/PlayerMonsterData';
 import { getPlayerRoleCurrentAttribute, loadPlayerRoleData } from '../../model/PlayerRoleData';
@@ -58,6 +61,18 @@ const ELEMENT_PATHS: Record<RoleProfession, string> = {
     [RoleProfession.Dark]: 'gui/common/elementIcon/element_dark/spriteFrame',
 };
 
+const FORMATION_UNIT_ART_PATHS: Record<string, string> = {
+    ally_01_crystal_mage: 'gui/common/ui_fixed/0e2f199c74e6_portrait_01_crystal_mage/spriteFrame',
+    ally_02_blue_swordsman: 'gui/formation_v2/portrait_06_blue_swordsman/spriteFrame',
+    ally_08_moyu_zhenren: 'gui/formation_v2/unit_03_moyu_zhenren/spriteFrame',
+    ally_09_lieyan_qiangsheng: 'gui/common/ui_fixed/e328d72fbd7e_portrait_02_lieyan_qiangsheng/spriteFrame',
+    ally_10_zixiao_xianji: 'gui/formation_v2/portrait_05_zixiao_xianji/spriteFrame',
+    ally_18_chiyan_luohan: 'gui/formation_v2/portrait_07_chiyan_luohan/spriteFrame',
+    ally_26_azure_luan_paper_artisan: 'gui/formation_v2/portrait_03_azure_luan_artisan/spriteFrame',
+    enemy_20_cloud_wing_manta_demon: 'gui/formation_v2/portrait_08_cloud_wing_manta/spriteFrame',
+    enemy_21_radiant_crystal_stag_king: 'gui/common/ui_fixed/9dd9e48851de_portrait_04_radiant_crystal_stag/spriteFrame',
+};
+
 function calculatePower(attribute: { hp: number; attack: number; defense: number; speed: number }): number {
     return Math.round(attribute.hp + attribute.attack * 5 + attribute.defense * 4 + attribute.speed * 10);
 }
@@ -80,6 +95,7 @@ export class TeamMain extends Component {
     private _page = 0;
     private _slotLabels: Label[] = [];
     private _slotEmptyArts: Node[] = [];
+    private _slotNameChips: (Node | null)[] = [];
     private _unitButtons: RuntimeButton[] = [];
     private _pageLabel: Label | null = null;
     private _statusLabel: Label | null = null;
@@ -162,19 +178,22 @@ export class TeamMain extends Component {
         const title = findChild(this.node, 'header/title')?.getComponent(Label);
         if (title) title.string = '阵容编辑';
         const tip = findChild(this.node, 'header/tip')?.getComponent(Label);
-        if (tip) tip.string = '角色和怪物伙伴均可上阵，点击卡片调整';
+        if (tip) tip.string = '点击角色调整上阵';
         const panelTitle = findChild(this.node, 'rolePanel/sectionTitle')?.getComponent(Label);
         if (panelTitle) panelTitle.string = '可选伙伴';
 
         this._slotLabels.length = 0;
         this._slotEmptyArts.length = 0;
+        this._slotNameChips.length = 0;
         for (let index = 0; index < 5; index++) {
             const slot = findChild(this.node, 'formationPanel/formationSlot' + (index + 1));
             const label = slot?.getChildByName('Label')?.getComponent(Label) ?? null;
             const emptyArt = slot?.getChildByName('emptyArt') ?? null;
+            const nameChip = slot?.getChildByName('nameChip') ?? null;
             if (slot && label && emptyArt) {
                 this._slotLabels.push(label);
                 this._slotEmptyArts.push(emptyArt);
+                this._slotNameChips.push(nameChip);
                 slot.on(Node.EventType.TOUCH_END, () => this.removeSlot(index), this);
             }
         }
@@ -223,11 +242,10 @@ export class TeamMain extends Component {
     private render(): void {
         this._slotLabels.forEach((label, index) => {
             const unit = this._units.find((item) => item.instanceId === this._selectedIds[index]);
-            label.string = unit
-                ? unit.name + '\n' + unit.star + '星 · Lv.' + unit.level + '\n点击下阵'
-                : '第' + (index + 1) + '位\n待上阵';
+            label.string = unit ? unit.name : '点击上阵';
             this._slotEmptyArts[index].active = !unit;
-            this.renderUnitIcon(label.node.parent, unit ?? null);
+            if (this._slotNameChips[index]) this._slotNameChips[index].active = !!unit;
+            this.renderUnitIcon(label.node.parent, unit ?? null, true);
         });
         if (this._countLabel) this._countLabel.string = this._selectedIds.length + ' / 5';
 
@@ -292,6 +310,7 @@ export class TeamMain extends Component {
             return false;
         }
         saveBattleFormation(this._selectedIds);
+        director.emit(GAME_EVENT_FORMATION_CHANGED);
         this._tasks.report('formationSave');
         if (this._statusLabel) this._statusLabel.string = '阵容保存成功';
         return true;
@@ -324,7 +343,7 @@ export class TeamMain extends Component {
         });
     }
 
-    private renderUnitIcon(container: Node | null, unit: FormationUnit | null): void {
+    private renderUnitIcon(container: Node | null, unit: FormationUnit | null, formationSlot = false): void {
         const iconNode = container?.getChildByName('roleIcon') ?? null;
         const sprite = iconNode?.getComponent(Sprite) ?? null;
         if (!iconNode || !sprite) return;
@@ -333,8 +352,21 @@ export class TeamMain extends Component {
         sprite.spriteFrame = null;
         iconNode.active = !!unit;
         if (!unit) return;
-        loadSpriteFrameCompat(unit.iconPath, (error, frame) => {
-            if (error || !frame || !iconNode.isValid || this._iconVersions.get(iconNode) !== version) return;
+        const fullBodyPath = formationSlot ? FORMATION_UNIT_ART_PATHS[unit.configId] : null;
+        loadSpriteFrameCompat(fullBodyPath ?? unit.iconPath, (error, frame) => {
+            if (!iconNode.isValid || this._iconVersions.get(iconNode) !== version) return;
+            if ((error || !frame) && fullBodyPath) {
+                loadSpriteFrameCompat(unit.iconPath, (fallbackError, fallbackFrame) => {
+                    if (fallbackError || !fallbackFrame || !iconNode.isValid || this._iconVersions.get(iconNode) !== version) return;
+                    iconNode.getComponent(UITransform)?.setContentSize(142, 142);
+                    sprite.spriteFrame = fallbackFrame;
+                });
+                return;
+            }
+            if (error || !frame) return;
+            if (formationSlot) {
+                iconNode.getComponent(UITransform)?.setContentSize(fullBodyPath ? 170 : 142, fullBodyPath ? 212 : 142);
+            }
             sprite.spriteFrame = frame;
         });
     }

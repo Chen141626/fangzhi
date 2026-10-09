@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "8b91181c-1d63-5ba6-8bea-8015d6086696",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "8b91181c-1d63-5ba6-8bea-8015d6086696@6c48a",
+      "displayName": "map_point_selected_gold_ring",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "8b91181c-1d63-5ba6-8bea-8015d6086696",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "8b91181c-1d63-5ba6-8bea-8015d6086696@f9941",
+      "displayName": "map_point_selected_gold_ring",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 6,
+        "trimY": 109,
+        "width": 628,
+        "height": 182,
+        "rawWidth": 640,
+        "rawHeight": 400,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -314.0,
+            -91.0,
+            0,
+            314.0,
+            -91.0,
+            0,
+            -314.0,
+            91.0,
+            0,
+            314.0,
+            91.0,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            6,
+            291,
+            634,
+            291,
+            6,
+            109,
+            634,
+            109
+          ],
+          "nuv": [
+            0.009375,
+            0.2725,
+            0.990625,
+            0.2725,
+            0.009375,
+            0.7275,
+            0.990625,
+            0.7275
+          ],
+          "minPos": [
+            -314.0,
+            -91.0,
+            0
+          ],
+          "maxPos": [
+            314.0,
+            91.0,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "8b91181c-1d63-5ba6-8bea-8015d6086696@6c48a",
+        "atlasUuid": ""
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": true,
+    "redirect": "8b91181c-1d63-5ba6-8bea-8015d6086696@6c48a"
+  }
+}

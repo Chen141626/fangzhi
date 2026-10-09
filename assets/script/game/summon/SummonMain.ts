@@ -271,7 +271,7 @@ export class SummonMain extends Component {
             } else {
                 const column = index % 5;
                 const row = Math.floor(index / 5);
-                card.node.setPosition(-242 + column * 121, 145 - row * 265, 0);
+                card.node.setPosition(-256 + column * 128, 145 - row * 265, 0);
                 card.node.setScale(1, 1, 1);
             }
 

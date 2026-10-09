@@ -7,6 +7,7 @@ import {
     Label,
     Node,
     Sprite,
+    UITransform,
     warn,
 } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
@@ -52,6 +53,15 @@ const PROFESSION_NAMES: Record<RoleProfession, string> = {
     [RoleProfession.Dark]: '暗',
 };
 
+const CHARACTER_ROSTER_SLICES = new Set([
+    'qingfeng_daotong',
+    'xuanyin_xianzi',
+    'moyu_zhenren',
+    'lieyan_qiangsheng',
+    'zixiao_xianji',
+    'qinglian_yaozun',
+]);
+
 function findChild(root: Node, path: string): Node | null {
     let current: Node | null = root;
     for (const name of path.split('/')) {
@@ -78,6 +88,9 @@ export class RoleMain extends Component {
     private _growthInfoLabel: Label | null = null;
     private _growthStatusLabel: Label | null = null;
     private readonly _iconVersions = new WeakMap<Node, number>();
+    private _mainArt: Node | null = null;
+    private _mainArtVersion = 0;
+    private _classBadge: Node | null = null;
 
     protected onLoad(): void {
         // 全屏页面拦截触摸，避免点击穿透到下方主界面。
@@ -85,6 +98,8 @@ export class RoleMain extends Component {
         const roleListNode = findChild(this.node, 'bg/roleList');
         this._scrollList = roleListNode?.getComponent(ScrollList) ?? null;
         this._roleItemTemplate = findChild(this.node, 'bg/roleList/view/content/roleItem');
+        this._mainArt = findChild(this.node, 'bg/roleIdleAnim');
+        this._classBadge = findChild(this.node, 'bg/role_warrior');
         this._backButton = findChild(this.node, 'bg/btn_back');
         this._backButton?.on(Node.EventType.TOUCH_END, this.onBack, this);
 
@@ -157,27 +172,34 @@ export class RoleMain extends Component {
     private showRole(role: PlayerRoleInstance | null): void {
         if (!role) {
             this._selectedInstanceId = '';
-            this.setLabel('bg/title/name', '暂无角色');
-            this.setLabel('bg/title/lv', '--');
-            this.setLabel('bg/title/power', '--');
+            this.renderMainArt(null);
+            if (this._classBadge) this._classBadge.active = false;
+            this.setLabel('bg/characterInfo/name', '暂无角色');
+            this.setLabel('bg/characterInfo/lv', '--');
+            this.setLabel('bg/powerBg/power', '--');
             this.setLabel('bg/bg/roleType/Label', '--');
             this.setBaseAttributeLabels('--', '--', '--', '--');
-            this.setStars(findChild(this.node, 'bg/title/starLayout'), 0);
+            this.setStars(findChild(this.node, 'bg/characterInfo/starLayout'), 0);
             if (this._growthInfoLabel) this._growthInfoLabel.string = '暂无角色，请先前往召唤';
             if (this._growthStatusLabel) this._growthStatusLabel.string = '';
             return;
         }
 
         this._selectedInstanceId = role.instanceId;
+        this.renderMainArt(role);
         const attribute = getPlayerRoleCurrentAttribute(role);
         const professionName = PROFESSION_NAMES[role.profession];
 
         const configId = resolveRoleConfigId(role);
+        if (this._classBadge) {
+            this._classBadge.active = configId === 'ally_02_blue_swordsman'
+                || configId === 'ally_06_qingfeng_daotong';
+        }
         const roleName = configId ? getUnitBattleSkills(configId)[0]?.unitName : null;
-        this.setLabel('bg/title/name', `${professionName}·${roleName ?? `角色${role.roleId}`}`);
-        this.setLabel('bg/title/lv', `${role.level}级`);
+        this.setLabel('bg/characterInfo/name', `${professionName}·${roleName ?? `角色${role.roleId}`}`);
+        this.setLabel('bg/characterInfo/lv', `${role.level}级`);
         const power = Math.round(attribute.hp + attribute.attack * 5 + attribute.defense * 4 + attribute.speed * 10);
-        this.setLabel('bg/title/power', String(power));
+        this.setLabel('bg/powerBg/power', String(power));
         this.setLabel('bg/bg/roleType/Label', ROLE_TYPE_NAMES[role.roleType]);
         this.setBaseAttributeLabels(
             String(attribute.hp),
@@ -185,7 +207,7 @@ export class RoleMain extends Component {
             String(attribute.defense),
             String(attribute.speed),
         );
-        this.setStars(findChild(this.node, 'bg/title/starLayout'), role.star);
+        this.setStars(findChild(this.node, 'bg/characterInfo/starLayout'), role.star);
         this.refreshGrowthInfo(role);
     }
 
@@ -224,8 +246,8 @@ export class RoleMain extends Component {
         const skillCost = getRoleSkillUpCost(role);
         this._growthInfoLabel.string = [
             `等级 ${role.level}/${getRoleLevelLimit(role.star)}　技能 Lv.${role.skillLevel ?? 1}/${role.star * 2}`,
-            `升级：金币${levelCost[0].amount}+聚气丹${levelCost[1].amount}　升星：金币${starCost[0].amount}+仙晶${starCost[1].amount}`,
-            `研习：金币${skillCost[0].amount}+仙晶${skillCost[1].amount}　持有：金币${this._items.getAmount('currency.gold')} 仙晶${this._items.getAmount('currency.crystal')} 聚气丹${this._items.getAmount('consumable.qi-pill')}`,
+            `升级：金币${levelCost[0].amount}·丹药${levelCost[1].amount}　升星：金币${starCost[0].amount}·仙晶${starCost[1].amount}`,
+            `研习：金币${skillCost[0].amount}·仙晶${skillCost[1].amount}　持有：金币${this._items.getAmount('currency.gold')} 仙晶${this._items.getAmount('currency.crystal')} 丹药${this._items.getAmount('consumable.qi-pill')}`,
         ].join('\n');
     }
 
@@ -276,8 +298,36 @@ export class RoleMain extends Component {
         const configId = resolveRoleConfigId(role);
         if (!configId) return;
         const slug = configId.replace(/^ally_\d+_/, '');
-        loadSpriteFrameCompat(`gui/common/roleIcon/character_${slug}/spriteFrame`, (error, frame) => {
+        const sliced = CHARACTER_ROSTER_SLICES.has(slug);
+        const path = sliced
+            ? `gui/character/roster_${slug}/spriteFrame`
+            : `gui/common/roleIcon/character_${slug}/spriteFrame`;
+        loadSpriteFrameCompat(path, (error, frame) => {
             if (error || !frame || !iconNode.isValid || this._iconVersions.get(iconNode) !== version) return;
+            const transform = iconNode.getComponent(UITransform);
+            transform?.setContentSize(sliced ? 112 : 512, sliced ? 132 : 640);
+            iconNode.setScale(sliced ? 1 : 0.3, sliced ? 1 : 0.3, 1);
+            sprite.spriteFrame = frame;
+        });
+    }
+
+    private renderMainArt(role: PlayerRoleInstance | null): void {
+        const art = this._mainArt;
+        const sprite = art?.getComponent(Sprite) ?? null;
+        if (!art || !sprite) return;
+        const version = ++this._mainArtVersion;
+        sprite.spriteFrame = null;
+        if (!role) return;
+        const configId = resolveRoleConfigId(role);
+        if (!configId) return;
+        const isQingfeng = configId === 'ally_06_qingfeng_daotong';
+        const path = isQingfeng
+            ? 'gui/character/selected_character_qingfeng_daotong/spriteFrame'
+            : `gui/common/anim/${configId}_animations/${configId}_idle_4f_frames/frame_01/spriteFrame`;
+        loadSpriteFrameCompat(path, (error, frame) => {
+            if (error || !frame || !art.isValid || this._mainArtVersion !== version) return;
+            art.getComponent(UITransform)?.setContentSize(isQingfeng ? 476 : 724, isQingfeng ? 595 : 724);
+            art.setPosition(0, isQingfeng ? 380 : 346, 0);
             sprite.spriteFrame = frame;
         });
     }

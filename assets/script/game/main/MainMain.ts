@@ -2,9 +2,12 @@ import { _decorator, Component, director, Label, Node, warn } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
 import { GameStorage } from '../../core/GameStorage';
-import { GAME_EVENT_RESOURCE_CHANGED, GAME_EVENT_TASK_CHANGED } from '../../core/GameEvents';
+import { GAME_EVENT_FORMATION_CHANGED, GAME_EVENT_RESOURCE_CHANGED, GAME_EVENT_TASK_CHANGED } from '../../core/GameEvents';
 import { ItemService } from '../item/ItemService';
 import { TaskService } from '../task/TaskService';
+import { loadBattleFormation } from '../battle/BattleRosterService';
+import { getPlayerRoleCurrentAttribute, loadPlayerRoleData } from '../../model/PlayerRoleData';
+import { getPlayerMonsterCurrentAttribute, loadPlayerMonsterData } from '../../model/PlayerMonsterData';
 
 const { ccclass, menu } = _decorator;
 
@@ -27,7 +30,10 @@ export class MainMain extends Component {
     private _battleButton: Node | null = null;
     private _teamButton: Node | null = null;
     private _summonButton: Node | null = null;
+    private _realmButton: Node | null = null;
     private _taskButton: Node | null = null;
+    private _refineButton: Node | null = null;
+    private _challengeButton: Node | null = null;
     private readonly _tasks = new TaskService();
     private readonly _popupBindings: Array<{
         node: Node;
@@ -38,6 +44,7 @@ export class MainMain extends Component {
         this.ensureStarterResources();
         director.on(GAME_EVENT_RESOURCE_CHANGED, this.refreshCurrencyHud, this);
         director.on(GAME_EVENT_TASK_CHANGED, this.refreshTaskHud, this);
+        director.on(GAME_EVENT_FORMATION_CHANGED, this.refreshPlayerHud, this);
         this._roleButton = findChild(this.node, 'bg/bottom/btn_role');
         if (!this._roleButton) {
             warn('[MainMain] 找不到角色按钮：bg/bottom/btn_role');
@@ -51,7 +58,7 @@ export class MainMain extends Component {
             warn('[MainMain] 找不到战斗按钮：bg/bottom/btn_battle');
         }
         else {
-            this._battleButton.on(Node.EventType.TOUCH_END, this.openTeam, this);
+            this._battleButton.on(Node.EventType.TOUCH_END, this.openBattle, this);
         }
 
         this._teamButton = findChild(this.node, 'bg/bottom/btn_team');
@@ -60,10 +67,17 @@ export class MainMain extends Component {
         const summonLabel = this._summonButton?.getChildByName('Label')?.getComponent(Label);
         if (summonLabel) summonLabel.string = '召唤';
         this._summonButton?.on(Node.EventType.TOUCH_END, this.openSummon, this);
+        this._realmButton = findChild(this.node, 'bg/bottom/btn_realm');
+        this._realmButton?.on(Node.EventType.TOUCH_END, this.showRealmNotice, this);
 
         this._taskButton = findChild(this.node, 'bg/task');
         if (!this._taskButton) warn('[MainMain] 找不到任务入口：bg/task');
         this._taskButton?.on(Node.EventType.TOUCH_END, this.openTask, this);
+
+        this._refineButton = findChild(this.node, 'bg/refineAction');
+        this._refineButton?.on(Node.EventType.TOUCH_END, this.showRefineNotice, this);
+        this._challengeButton = findChild(this.node, 'bg/challengeAction');
+        this._challengeButton?.on(Node.EventType.TOUCH_END, this.openBattle, this);
 
         this.bindPopup('bg/leftBtn/btn_daily_gift', UIID.DailyWelfare, '每日福利');
         this.bindPopup('bg/leftBtn/btn_limited', UIID.LimitedTimeEvents, '限时活动');
@@ -84,11 +98,15 @@ export class MainMain extends Component {
     protected onDestroy(): void {
         director.off(GAME_EVENT_RESOURCE_CHANGED, this.refreshCurrencyHud, this);
         director.off(GAME_EVENT_TASK_CHANGED, this.refreshTaskHud, this);
+        director.off(GAME_EVENT_FORMATION_CHANGED, this.refreshPlayerHud, this);
         this._roleButton?.off(Node.EventType.TOUCH_END, this.openRole, this);
-        this._battleButton?.off(Node.EventType.TOUCH_END, this.openTeam, this);
+        this._battleButton?.off(Node.EventType.TOUCH_END, this.openBattle, this);
         this._teamButton?.off(Node.EventType.TOUCH_END, this.openTeam, this);
         this._summonButton?.off(Node.EventType.TOUCH_END, this.openSummon, this);
+        this._realmButton?.off(Node.EventType.TOUCH_END, this.showRealmNotice, this);
         this._taskButton?.off(Node.EventType.TOUCH_END, this.openTask, this);
+        this._refineButton?.off(Node.EventType.TOUCH_END, this.showRefineNotice, this);
+        this._challengeButton?.off(Node.EventType.TOUCH_END, this.openBattle, this);
         for (const binding of this._popupBindings) {
             binding.node.off(Node.EventType.TOUCH_END, binding.handler, this);
         }
@@ -133,6 +151,14 @@ export class MainMain extends Component {
         });
     }
 
+    private showRefineNotice(): void {
+        oops.gui.toast('炼器玩法尚未开放');
+    }
+
+    private showRealmNotice(): void {
+        oops.gui.toast('秘境玩法尚未开放');
+    }
+
     private ensureStarterResources(): void {
         const key = 'fangzhi.starter-resources-v1';
         if (GameStorage.load<boolean>(key) === true) return;
@@ -148,11 +174,58 @@ export class MainMain extends Component {
 
     private refreshCurrencyHud(): void {
         const items = new ItemService();
-        // money 使用仙玉图标，money-001 使用金币图标；按实际 prefab 图标绑定，避免数值错位。
+        // Three HUD bars use jade, gold and crystal icons in that order.
         const jade = findChild(this.node, 'bg/top/money/num')?.getComponent(Label);
         const gold = findChild(this.node, 'bg/top/money-001/num')?.getComponent(Label);
+        const crystal = findChild(this.node, 'bg/top/money-002/num')?.getComponent(Label);
         if (gold) gold.string = String(items.getAmount('currency.gold'));
         if (jade) jade.string = String(items.getAmount('currency.jade'));
+        if (crystal) crystal.string = String(items.getAmount('currency.crystal'));
+        this.refreshPlayerHud();
+    }
+
+    private refreshPlayerHud(): void {
+        const roles = loadPlayerRoleData().roles;
+        const monsters = loadPlayerMonsterData().monsters;
+        const level = Math.max(1, ...roles.map((role) => role.level));
+        const levelLabel = findChild(this.node, 'bg/top/head/lv')?.getComponent(Label);
+        if (levelLabel) levelLabel.string = `${level}级`;
+
+        const owned: Array<{ id: string; star: number; level: number; obtainedAt: number; power: number }> = [];
+        for (const role of roles) {
+            const attr = getPlayerRoleCurrentAttribute(role);
+            owned.push({
+                id: role.instanceId,
+                star: role.star,
+                level: role.level,
+                obtainedAt: role.obtainedAt,
+                power: Math.round(attr.hp + attr.attack * 5 + attr.defense * 4 + attr.speed * 10),
+            });
+        }
+        for (const monster of monsters) {
+            const attr = getPlayerMonsterCurrentAttribute(monster);
+            owned.push({
+                id: monster.instanceId,
+                star: monster.star,
+                level: monster.level,
+                obtainedAt: monster.obtainedAt,
+                power: Math.round(attr.hp + attr.attack * 5 + attr.defense * 4 + attr.speed * 10),
+            });
+        }
+        const byId = new Map(owned.map((unit) => [unit.id, unit]));
+        let selected = loadBattleFormation().allyInstanceIds
+            .map((id) => byId.get(id))
+            .filter((unit): unit is (typeof owned)[number] => !!unit);
+        if (!selected.length) {
+            selected = owned.sort((a, b) => b.star - a.star || b.level - a.level || a.obtainedAt - b.obtainedAt).slice(0, 5);
+        }
+        const totalPower = selected.reduce((sum, unit) => sum + unit.power, 0);
+        const powerLabel = findChild(this.node, 'bg/top/head/power')?.getComponent(Label);
+        if (powerLabel) {
+            powerLabel.string = totalPower >= 10000
+                ? `战力 ${(totalPower / 10000).toFixed(1)}万`
+                : `战力 ${totalPower}`;
+        }
     }
 
     private refreshTaskHud(): void {

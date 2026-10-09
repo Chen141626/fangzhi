@@ -1,0 +1,134 @@
+{
+  "ver": "1.0.27",
+  "importer": "image",
+  "imported": true,
+  "uuid": "04b83cc9-9bbe-5e05-8dc5-93fe77b876cf",
+  "files": [
+    ".json",
+    ".png"
+  ],
+  "subMetas": {
+    "6c48a": {
+      "importer": "texture",
+      "uuid": "04b83cc9-9bbe-5e05-8dc5-93fe77b876cf@6c48a",
+      "displayName": "weapon_20_sunmoon_orb",
+      "id": "6c48a",
+      "name": "texture",
+      "userData": {
+        "wrapModeS": "clamp-to-edge",
+        "wrapModeT": "clamp-to-edge",
+        "minfilter": "linear",
+        "magfilter": "linear",
+        "mipfilter": "none",
+        "anisotropy": 0,
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "04b83cc9-9bbe-5e05-8dc5-93fe77b876cf",
+        "visible": false
+      },
+      "ver": "1.0.22",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    },
+    "f9941": {
+      "importer": "sprite-frame",
+      "uuid": "04b83cc9-9bbe-5e05-8dc5-93fe77b876cf@f9941",
+      "displayName": "weapon_20_sunmoon_orb",
+      "id": "f9941",
+      "name": "spriteFrame",
+      "userData": {
+        "trimType": "auto",
+        "trimThreshold": 1,
+        "rotated": false,
+        "offsetX": 0,
+        "offsetY": 0,
+        "trimX": 14,
+        "trimY": 9,
+        "width": 72,
+        "height": 82,
+        "rawWidth": 100,
+        "rawHeight": 100,
+        "borderTop": 0,
+        "borderBottom": 0,
+        "borderLeft": 0,
+        "borderRight": 0,
+        "packable": true,
+        "pixelsToUnit": 100,
+        "pivotX": 0.5,
+        "pivotY": 0.5,
+        "meshType": 0,
+        "vertices": {
+          "rawPosition": [
+            -36.0,
+            -41.0,
+            0,
+            36.0,
+            -41.0,
+            0,
+            -36.0,
+            41.0,
+            0,
+            36.0,
+            41.0,
+            0
+          ],
+          "indexes": [
+            0,
+            1,
+            2,
+            2,
+            1,
+            3
+          ],
+          "uv": [
+            14,
+            91,
+            86,
+            91,
+            14,
+            9,
+            86,
+            9
+          ],
+          "nuv": [
+            0.14,
+            0.09,
+            0.86,
+            0.09,
+            0.14,
+            0.91,
+            0.86,
+            0.91
+          ],
+          "minPos": [
+            -36.0,
+            -41.0,
+            0
+          ],
+          "maxPos": [
+            36.0,
+            41.0,
+            0
+          ]
+        },
+        "isUuid": true,
+        "imageUuidOrDatabaseUri": "04b83cc9-9bbe-5e05-8dc5-93fe77b876cf@6c48a",
+        "atlasUuid": ""
+      },
+      "ver": "1.0.12",
+      "imported": true,
+      "files": [
+        ".json"
+      ],
+      "subMetas": {}
+    }
+  },
+  "userData": {
+    "type": "sprite-frame",
+    "fixAlphaTransparencyArtifacts": false,
+    "hasAlpha": true,
+    "redirect": "04b83cc9-9bbe-5e05-8dc5-93fe77b876cf@6c48a"
+  }
+}

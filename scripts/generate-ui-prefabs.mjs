@@ -1,13 +1,25 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 
+function spriteFrameUuid(assetPath) {
+    const metadata = JSON.parse(fs.readFileSync(`${assetPath}.meta`, 'utf8'));
+    const uuid = metadata.subMetas?.f9941?.uuid;
+    if (!uuid) throw new Error(`SpriteFrame metadata missing: ${assetPath}`);
+    return uuid;
+}
+
 const FONT_UUID = '14795b54-d353-4242-bb53-4d74b06fa88c';
 const ROUND_RECT_TYPE = '0c642ae8t1G8oGNOOvlEI0M';
-const TEAM_BACK_SPRITE = '7ec84c92-fc89-4408-9191-f30ad16fedf4@f9941';
-const TEAM_AUTO_SPRITE = '0f811d64-2f1d-4975-8613-0f72420ea55a@f9941';
-const TEAM_ADD_SLOT_SPRITE = 'cf63e3bf-200f-4dec-9da1-6170d8269afc@f9941';
+const TEAM_BACK_SPRITE = spriteFrameUuid('assets/resources/gui/formation_v2/btn_back_empty.png');
+const TEAM_AUTO_SPRITE = spriteFrameUuid('assets/resources/gui/formation_v2/btn_auto_deploy_empty.png');
+const TEAM_ADD_SLOT_SPRITE = spriteFrameUuid('assets/resources/gui/common/ui_fixed/c9f18558b2de_slot_add.png');
 const TEAM_CARD_NORMAL_SPRITE = '221f557b-4426-444e-aa3c-7f7f0ffc8eea@f9941';
 const TEAM_BACKGROUND_SPRITE = 'b73156f4-dcce-4d9d-83a4-5ed59b4b33ad@f9941';
+const TEAM_FORMATION_BACKGROUND_SPRITE = spriteFrameUuid('assets/resources/gui/formation_v2/background_formation_empty_750x860.png');
+const TEAM_TITLE_SPRITE = spriteFrameUuid('assets/resources/gui/formation_v2/title_formation_empty.png');
+const TEAM_COUNT_SPRITE = spriteFrameUuid('assets/resources/gui/formation_v2/label_current_formation_bg.png');
+const TEAM_ALL_CHARACTERS_SPRITE = spriteFrameUuid('assets/resources/gui/formation/title_all_characters_empty.png');
+const TEAM_NAME_CHIP_SPRITE = spriteFrameUuid('assets/resources/gui/character_edit/name_chip_normal_empty.png');
 const SUMMON_BACKGROUND_SPRITE = 'fcbfc40f-b4e0-4a5f-b407-fc114a9916e8@f9941';
 const SUMMON_TITLE_SPRITE = '9e3f7276-e160-42cc-bbc6-d060b1fb535b@f9941';
 const SUMMON_TAB_SELECTED_SPRITE = 'aa28eca8-d9d3-4938-a1dd-aa22fd31b004@f9941';
@@ -332,88 +344,92 @@ function buildTeamPrefab() {
     b.addWidget(root);
     b.addScript(root, TEAM_MAIN_TYPE);
     b.addNode(root, 'background', { width: 750, height: 1600, spriteUuid: TEAM_BACKGROUND_SPRITE });
-
-    const header = b.addNode(root, 'header', { y: 655, width: 720, height: 230 });
-    b.addNode(header, 'titlePanel', {
-        y: 78, width: 430, height: 82, panelColor: [247, 240, 213, 235], radius: 28,
-        strokeColor: [215, 165, 72, 255],
+    b.addNode(root, 'formationBackdrop', {
+        y: 370, width: 750, height: 860, spriteUuid: TEAM_FORMATION_BACKGROUND_SPRITE,
     });
+
+    const header = b.addNode(root, 'header', { y: 650, width: 720, height: 260 });
+    b.addNode(header, 'titleArt', { y: 80, width: 486, height: 133, spriteUuid: TEAM_TITLE_SPRITE });
     b.addNode(header, 'title', {
-        y: 78, width: 430, height: 82, label: '阵容编辑', fontSize: 48, bold: true,
+        y: 80, width: 390, height: 78, label: '阵容编辑', fontSize: 46, bold: true,
         textColor: [31, 49, 67], outlineColor: [255, 245, 211], outlineWidth: 1,
     });
-    b.addNode(header, 'tipPanel', { y: -32, width: 580, height: 86, panelColor: [245, 237, 210, 225], radius: 28, strokeColor: [215, 165, 72, 255] });
-    b.addNode(header, 'tip', {
-        y: -32, width: 540, height: 70, label: '角色和怪物伙伴均可上阵\n点击卡片调整上阵顺序', fontSize: 21,
-        textColor: [36, 65, 81], outlineColor: [255, 248, 220], outlineWidth: 1,
+    b.addNode(header, 'countArt', { y: -40, width: 237, height: 56, spriteUuid: TEAM_COUNT_SPRITE });
+    b.addNode(header, 'countTitle', {
+        x: -32, y: -40, width: 120, height: 45, label: '当前阵容', fontSize: 20, bold: true,
+        textColor: [255, 239, 190], outlineColor: [17, 47, 78], outlineWidth: 2,
     });
-    addArtButton(b, header, 'btn_back', -314, 76, 105, 56, TEAM_BACK_SPRITE, 150, 57, '', 20);
+    b.addNode(header, 'tip', {
+        y: -102, width: 550, height: 45, label: '点击角色调整上阵', fontSize: 24, bold: true,
+        textColor: [29, 55, 75], outlineColor: [255, 248, 220], outlineWidth: 2,
+    });
+    addArtButton(b, header, 'btn_back', -310, 80, 112, 46, TEAM_BACK_SPRITE, 112, 46, '返回', 18);
 
     const formation = b.addNode(root, 'formationPanel', {
-        y: 285, width: 710, height: 560, panelColor: [232, 245, 237, 225], radius: 28,
-        strokeColor: [215, 165, 72, 245],
+        y: 270, width: 750, height: 600,
     });
     b.addNode(formation, 'sectionTitle', {
-        y: 245, width: 300, height: 48, label: '当前阵容', fontSize: 28, bold: true,
-        textColor: [30, 66, 80], outlineColor: [255, 247, 216], outlineWidth: 1,
+        y: 330, width: 300, height: 48, label: '', fontSize: 26, active: false,
     });
     b.addNode(formation, 'count', {
-        x: 270, y: 245, width: 120, height: 44, label: '0 / 5', fontSize: 25, bold: true,
-        textColor: [20, 113, 127], outlineColor: [255, 247, 216], outlineWidth: 1,
+        x: 78, y: 340, width: 75, height: 44, label: '0 / 5', fontSize: 22, bold: true,
+        textColor: [255, 239, 190], outlineColor: [17, 47, 78], outlineWidth: 2,
     });
-    const slotPositions = [[-205, 100], [0, 135], [205, 100], [-105, -135], [105, -135]];
+    // Align units to the five circles painted into background_formation_empty_750x860.png.
+    const slotPositions = [[-145, 80], [115, 80], [-210, -150], [0, -150], [205, -150]];
     for (let index = 0; index < 5; index++) {
         const [x, y] = slotPositions[index];
         const slot = b.addNode(formation, `formationSlot${index + 1}`, {
-            x, y, width: 176, height: 214,
-            panelColor: [226, 241, 239, 238], radius: 26, strokeColor: [252, 213, 90, 240],
+            x, y, width: 176, height: 255,
         });
-        b.addNode(slot, 'emptyArt', { y: 8, width: 176, height: 123, spriteUuid: TEAM_ADD_SLOT_SPRITE });
-        b.addNode(slot, 'roleIcon', { y: 24, width: 142, height: 142, spriteUuid: null, active: false });
+        b.addNode(slot, 'emptyArt', { width: 110, height: 110, spriteUuid: TEAM_ADD_SLOT_SPRITE });
+        b.addNode(slot, 'roleIcon', { y: 90, width: 170, height: 212, spriteUuid: null, active: false });
+        b.addNode(slot, 'nameChip', { y: -58, width: 136, height: 37, spriteUuid: TEAM_NAME_CHIP_SPRITE, active: false });
         b.addNode(slot, 'Label', {
-            y: -69, width: 158, height: 62, label: `第${index + 1}位\n待上阵`, fontSize: 18, bold: true,
-            textColor: [24, 62, 85], outlineColor: [255, 248, 220], outlineWidth: 1,
+            y: -58, width: 154, height: 36, label: '点击上阵', fontSize: 18, bold: true,
+            textColor: [255, 248, 219], outlineColor: [18, 58, 88], outlineWidth: 2,
         });
     }
 
     const rolePanel = b.addNode(root, 'rolePanel', {
-        y: -310, width: 720, height: 620, panelColor: [246, 241, 218, 248], radius: 28,
+        y: -380, width: 720, height: 660, panelColor: [246, 241, 218, 248], radius: 28,
         strokeColor: [193, 139, 47, 240],
     });
+    b.addNode(rolePanel, 'sectionTitleArt', { y: 310, width: 472, height: 94, spriteUuid: TEAM_ALL_CHARACTERS_SPRITE });
     b.addNode(rolePanel, 'sectionTitle', {
-        y: 286, width: 360, height: 48, label: '全部伙伴', fontSize: 29, bold: true,
+        y: 310, width: 360, height: 48, label: '全部伙伴', fontSize: 29, bold: true,
         textColor: [28, 58, 91], outlineColor: [255, 247, 216], outlineWidth: 2,
     });
     for (let index = 0; index < 8; index++) {
         const column = index % 4;
         const actualRow = Math.floor(index / 4);
         const card = b.addNode(rolePanel, `roleCard${index + 1}`, {
-            x: -258 + column * 172, y: 135 - actualRow * 270, width: 158, height: 258,
+            x: -258 + column * 172, y: 110 - actualRow * 270, width: 158, height: 258,
             spriteUuid: TEAM_CARD_NORMAL_SPRITE,
         });
         b.addNode(card, 'roleIcon', { y: 45, width: 132, height: 132, spriteUuid: null });
         b.addNode(card, 'elementIcon', { x: -53, y: 101, width: 36, height: 36, spriteUuid: ELEMENT_SPRITES.water });
         b.addNode(card, 'level', { x: 48, y: 105, width: 58, height: 28, label: '1级', fontSize: 17, bold: true, textColor: [255, 255, 255], outlineColor: [22, 53, 78], outlineWidth: 2 });
-        b.addNode(card, 'name', { y: -28, width: 138, height: 32, label: '伙伴名称', fontSize: 18, bold: true, textColor: [31, 54, 72] });
-        b.addNode(card, 'stars', { y: -59, width: 140, height: 28, label: '★★★★★', fontSize: 18, textColor: [235, 169, 35], outlineColor: [94, 60, 17], outlineWidth: 1 });
-        b.addNode(card, 'power', { y: -88, width: 140, height: 28, label: '战力 0', fontSize: 16, textColor: [35, 60, 80] });
-        b.addNode(card, 'Label', { y: -116, width: 140, height: 32, label: '未上阵', fontSize: 18, bold: true, textColor: [255, 255, 255], outlineColor: [15, 54, 91], outlineWidth: 2 });
+        b.addNode(card, 'name', { y: -22, width: 138, height: 29, label: '伙伴名称', fontSize: 17, bold: true, textColor: [31, 54, 72] });
+        b.addNode(card, 'stars', { y: -47, width: 140, height: 22, label: '★★★★★', fontSize: 16, textColor: [235, 169, 35], outlineColor: [94, 60, 17], outlineWidth: 1 });
+        b.addNode(card, 'power', { y: -72, width: 140, height: 20, label: '战力 0', fontSize: 14, textColor: [35, 60, 80] });
+        b.addNode(card, 'Label', { y: -103, width: 140, height: 28, label: '未上阵', fontSize: 17, bold: true, textColor: [255, 255, 255], outlineColor: [15, 54, 91], outlineWidth: 2 });
     }
 
-    const pagination = b.addNode(root, 'pagination', { y: -633, width: 500, height: 52 });
+    const pagination = b.addNode(root, 'pagination', { y: -690, width: 500, height: 44 });
     addButton(b, pagination, 'btn_previous', -150, 0, 120, 48, '上一页', [116, 88, 55, 245]);
     b.addNode(pagination, 'page', { width: 130, height: 42, label: '1 / 1', fontSize: 20, bold: true, textColor: [91, 61, 26], outlineColor: [255, 247, 216], outlineWidth: 1 });
     addButton(b, pagination, 'btn_next', 150, 0, 120, 48, '下一页', [116, 88, 55, 245]);
-    b.addNode(root, 'status', { y: -674, width: 620, height: 42, label: '', fontSize: 20, textColor: [105, 69, 25], outlineColor: [255, 247, 216], outlineWidth: 1 });
+    b.addNode(root, 'status', { y: -726, width: 620, height: 35, label: '', fontSize: 18, textColor: [255, 232, 153], outlineColor: [36, 45, 58], outlineWidth: 2 });
 
     b.addNode(root, 'actionPanel', {
-        y: -733, width: 730, height: 134, panelColor: [242, 232, 202, 235], radius: 28,
+        y: -762, width: 730, height: 78, panelColor: [242, 232, 202, 235], radius: 22,
         strokeColor: [193, 139, 47, 240],
     });
-    const actions = b.addNode(root, 'actions', { y: -733, width: 720, height: 94 });
-    addArtButton(b, actions, 'btn_auto', -235, 0, 205, 76, TEAM_AUTO_SPRITE, 212, 78, '', 20);
-    addArtButton(b, actions, 'btn_save', 0, 0, 205, 76, SUMMON_ONCE_SPRITE, 480, 198, '保存阵容', 22);
-    addArtButton(b, actions, 'btn_battle', 235, 0, 205, 76, SUMMON_TEN_SPRITE, 450, 125, '开始战斗', 22);
+    const actions = b.addNode(root, 'actions', { y: -762, width: 720, height: 76 });
+    addArtButton(b, actions, 'btn_auto', -235, 0, 205, 76, TEAM_AUTO_SPRITE, 205, 76, '一键上阵', 21);
+    addArtButton(b, actions, 'btn_save', 0, 0, 205, 76, TEAM_BACK_SPRITE, 205, 76, '保存阵容', 21);
+    addArtButton(b, actions, 'btn_battle', 235, 0, 205, 76, TEAM_AUTO_SPRITE, 205, 76, '开始战斗', 21);
     return b.data;
 }
 
@@ -430,23 +446,23 @@ function buildSummonPrefab() {
         y: 47, width: 470, height: 76, label: '仙缘召唤', fontSize: 46, bold: true,
         textColor: [255, 235, 169], outlineColor: [74, 37, 70], outlineWidth: 3, shadowColor: [15, 12, 36, 180], shadowY: -3,
     });
-    addArtButton(b, header, 'btn_back', -315, 65, 100, 54, TEAM_BACK_SPRITE, 145, 55, '', 18);
+    addArtButton(b, header, 'btn_back', -315, 65, 112, 46, TEAM_BACK_SPRITE, 112, 46, '返回', 18);
     const currency = b.addNode(header, 'currencyBar', { y: -77, width: 520, height: 56, panelColor: [47, 30, 55, 205], radius: 24, strokeColor: [238, 196, 86, 240] });
     b.addNode(currency, 'token', { x: -205, width: 46, height: 46, spriteUuid: SUMMON_TOKEN_SPRITE });
     b.addNode(header, 'currency', { y: -77, x: 25, width: 430, height: 50, label: '仙玉：0　角色：0　怪物：0', fontSize: 21, bold: true, textColor: [224, 239, 255], outlineColor: [20, 28, 68], outlineWidth: 2 });
 
     const tabs = b.addNode(root, 'poolTabs', { y: 515, width: 650, height: 84 });
     for (const [kind, x, text] of [['role', -155, '角色召唤'], ['monster', 155, '怪物召唤']]) {
-        const tab = b.addNode(tabs, `${kind}Tab`, { x, width: 250, height: 72 });
-        b.addNode(tab, 'normalArt', { width: 480, height: 132, spriteUuid: SUMMON_TAB_NORMAL_SPRITE, active: kind !== 'role' });
-        b.addNode(tab, 'selectedArt', { width: 480, height: 132, spriteUuid: SUMMON_TAB_SELECTED_SPRITE, active: kind === 'role' });
+        const tab = b.addNode(tabs, `${kind}Tab`, { x, width: 310, height: 86 });
+        b.addNode(tab, 'normalArt', { width: 310, height: 86, spriteUuid: SUMMON_TAB_NORMAL_SPRITE, active: kind !== 'role' });
+        b.addNode(tab, 'selectedArt', { width: 310, height: 86, spriteUuid: SUMMON_TAB_SELECTED_SPRITE, active: kind === 'role' });
         b.addNode(tab, 'elementIcon', { x: -82, width: 38, height: 38, spriteUuid: kind === 'role' ? ELEMENT_SPRITES.light : ELEMENT_SPRITES.dark });
         b.addNode(tab, 'Label', { x: 15, width: 180, height: 52, label: text, fontSize: 24, bold: true, textColor: kind === 'role' ? [255, 229, 145] : [201, 214, 233], outlineColor: [34, 28, 58], outlineWidth: 2 });
     }
 
-    const probability = b.addNode(root, 'probability', { y: 441, width: 610, height: 80 });
-    b.addNode(probability, 'art', { width: 1150, height: 90, spriteUuid: SUMMON_PROBABILITY_SPRITE });
-    b.addNode(probability, 'Label', { width: 540, height: 56, label: '三星91.5% · 四星8% · 五星0.5%', fontSize: 20, textColor: [240, 227, 189], outlineColor: [29, 27, 61], outlineWidth: 2 });
+    const probability = b.addNode(root, 'probability', { y: 425, width: 460, height: 110 });
+    b.addNode(probability, 'art', { width: 460, height: 110, spriteUuid: SUMMON_PROBABILITY_SPRITE });
+    b.addNode(probability, 'Label', { width: 430, height: 60, label: '三星91.5% · 四星8% · 五星0.5%', fontSize: 20, textColor: [240, 227, 189], outlineColor: [29, 27, 61], outlineWidth: 2 });
 
     const resultPanel = b.addNode(root, 'resultPanel', { y: 70, width: 680, height: 670 });
     b.addNode(resultPanel, 'leftBanner', { x: -290, y: 20, width: 170, height: 390, spriteUuid: SUMMON_BANNER_SPRITE });
@@ -456,10 +472,10 @@ function buildSummonPrefab() {
         const column = index % 5;
         const row = Math.floor(index / 5);
         const card = b.addNode(resultPanel, `resultCard${index + 1}`, {
-            x: -242 + column * 121, y: 145 - row * 265, width: 118, height: 232, active: false,
+            x: -256 + column * 128, y: 145 - row * 265, width: 127, height: 221, active: false,
         });
-        b.addNode(card, 'roleBg', { width: 118, height: 220, spriteUuid: SUMMON_ROLE_CARD_SPRITE });
-        b.addNode(card, 'monsterBg', { width: 118, height: 220, spriteUuid: SUMMON_MONSTER_CARD_SPRITE, active: false });
+        b.addNode(card, 'roleBg', { width: 127, height: 221, spriteUuid: SUMMON_ROLE_CARD_SPRITE });
+        b.addNode(card, 'monsterBg', { width: 127, height: 221, spriteUuid: SUMMON_MONSTER_CARD_SPRITE, active: false });
         b.addNode(card, 'icon', { y: 34, width: 104, height: 122, spriteUuid: null });
         b.addNode(card, 'elementIcon', { x: -42, y: 83, width: 32, height: 32, spriteUuid: ELEMENT_SPRITES.water });
         b.addNode(card, 'stars', { y: -45, width: 104, height: 24, label: '★★★', fontSize: 16, textColor: [255, 196, 60], outlineColor: [71, 42, 20], outlineWidth: 1 });
@@ -469,54 +485,89 @@ function buildSummonPrefab() {
     b.addNode(root, 'status', { y: -342, width: 640, height: 58, label: '', fontSize: 23, bold: true, textColor: [255, 215, 111], outlineColor: [45, 31, 61], outlineWidth: 2 });
 
     const actions = b.addNode(root, 'actions', { y: -475, width: 720, height: 210 });
-    const single = addArtButton(b, actions, 'btn_single', -205, 25, 220, 86, SUMMON_ONCE_SPRITE, 500, 210, '召唤1次', 22);
-    b.addNode(single, 'cost', { y: -32, width: 180, height: 30, label: `仙玉×${SUMMON_SINGLE_COST}`, fontSize: 16, textColor: [210, 253, 255], outlineColor: [17, 68, 79], outlineWidth: 2 });
-    const ten = addArtButton(b, actions, 'btn_ten', 55, 25, 240, 86, SUMMON_TEN_SPRITE, 520, 135, '召唤10次', 22);
-    b.addNode(ten, 'cost', { y: -32, width: 190, height: 30, label: `仙玉×${SUMMON_TEN_COST}`, fontSize: 16, textColor: [255, 237, 182], outlineColor: [92, 48, 12], outlineWidth: 2 });
-    addArtButton(b, actions, 'btn_roles', 270, 25, 150, 86, SUMMON_GALLERY_SPRITE, 400, 190, '阵容', 21);
+    const single = addArtButton(b, actions, 'btn_single', -226, 25, 218, 94, SUMMON_ONCE_SPRITE, 218, 94, '召唤1次', 22);
+    b.addNode(single, 'cost', { y: -30, width: 180, height: 27, label: `仙玉×${SUMMON_SINGLE_COST}`, fontSize: 15, textColor: [210, 253, 255], outlineColor: [17, 68, 79], outlineWidth: 2 });
+    const ten = addArtButton(b, actions, 'btn_ten', 0, 25, 218, 94, SUMMON_TEN_SPRITE, 218, 94, '召唤10次', 22);
+    b.addNode(ten, 'cost', { y: -30, width: 180, height: 27, label: `仙玉×${SUMMON_TEN_COST}`, fontSize: 15, textColor: [255, 237, 182], outlineColor: [92, 48, 12], outlineWidth: 2 });
+    addArtButton(b, actions, 'btn_roles', 226, 25, 200, 94, SUMMON_GALLERY_SPRITE, 200, 93, '阵容', 21);
     b.addNode(actions, 'tip', { y: -62, width: 640, height: 40, label: '十连召唤享九折 · 召唤结果立即加入伙伴列表', fontSize: 18, textColor: [225, 221, 246], outlineColor: [33, 30, 72], outlineWidth: 2 });
     return b.data;
 }
 
 function buildTaskPrefab() {
     const b = createBuilder('task');
+    const backgroundSprite = spriteFrameUuid('assets/role/texture/ui/character_screen_background_750x1600.png');
+    const titleSprite = spriteFrameUuid('assets/resources/gui/common/texture/title_character_empty.png');
+    const backSprite = spriteFrameUuid('assets/resources/gui/common/texture/btn_back-001.png');
+    const selectedTabSprite = spriteFrameUuid('assets/resources/gui/common/texture/tab_selected_empty.png');
+    const normalTabSprite = spriteFrameUuid('assets/resources/gui/common/texture/tab_normal_empty.png');
+    const claimAllSprite = spriteFrameUuid('assets/resources/gui/common/texture/btn_challenge_empty.png');
     const root = b.addNode(null, 'task', { width: 750, height: 1600 });
     b.addWidget(root);
     b.addScript(root, TASK_MAIN_TYPE);
-    b.addNode(root, 'background', { width: 750, height: 1600, panelColor: [13, 24, 42, 255], radius: 0 });
+    b.addNode(root, 'background', { width: 750, height: 1600, spriteUuid: backgroundSprite });
+    b.addNode(root, 'backdrop', {
+        y: -55, width: 720, height: 1280,
+        panelColor: [17, 41, 75, 230], radius: 34, strokeColor: [222, 181, 96, 255],
+    });
 
     const header = b.addNode(root, 'header', { y: 685, width: 700, height: 150 });
-    b.addNode(header, 'title', { y: 24, width: 420, height: 70, label: '修行任务', fontSize: 42, bold: true, textColor: [255, 221, 132] });
-    b.addNode(header, 'tip', { y: -40, width: 520, height: 42, label: '完成目标，领取修行资源', fontSize: 22, textColor: [180, 207, 235] });
-    addButton(b, header, 'btn_back', -300, 24, 125, 58, '', [82, 78, 81, 255], TEAM_BACK_SPRITE);
+    const title = b.addNode(header, 'title', { y: 24, width: 520, height: 150, spriteUuid: titleSprite });
+    b.addNode(title, 'titleText', {
+        width: 360, height: 80, label: '修行任务', fontSize: 43, bold: true,
+        textColor: [255, 230, 159], outlineColor: [46, 43, 66], outlineWidth: 3,
+    });
+    b.addNode(header, 'tip', {
+        y: -66, width: 540, height: 42, label: '完成目标，领取修行资源', fontSize: 21,
+        textColor: [255, 247, 220], outlineColor: [27, 56, 83], outlineWidth: 2,
+    });
+    b.addNode(header, 'btn_back', { x: -300, y: 32, width: 110, height: 110, spriteUuid: backSprite });
 
     const tabs = b.addNode(root, 'tabs', { y: 555, width: 700, height: 80 });
-    addButton(b, tabs, 'btn_main', -225, 0, 200, 64, '◆ 主线任务', [135, 91, 49, 255]);
-    addButton(b, tabs, 'btn_daily', 0, 0, 200, 64, '每日任务', [49, 85, 119, 255]);
-    addButton(b, tabs, 'btn_achievement', 225, 0, 200, 64, '成就', [49, 85, 119, 255]);
-    b.addNode(root, 'summary', { y: 485, width: 650, height: 46, label: '主线任务　已领取 0/6　可领取 0', fontSize: 22, textColor: [255, 216, 128] });
+    for (const [name, x, label, sprite] of [
+        ['btn_main', -210, '◆ 主线任务', selectedTabSprite],
+        ['btn_daily', 0, '每日任务', normalTabSprite],
+        ['btn_achievement', 210, '成就', normalTabSprite],
+    ]) {
+        const tab = b.addNode(tabs, name, { x, width: 190, height: 72 });
+        b.addNode(tab, 'art', { width: 190, height: 72, spriteUuid: sprite });
+        b.addNode(tab, 'Label', {
+            width: 175, height: 54, label, fontSize: 22, bold: true,
+            textColor: [255, 238, 195], outlineColor: [20, 41, 70], outlineWidth: 2,
+        });
+    }
+    b.addNode(root, 'summary', {
+        y: 485, width: 650, height: 50, panelColor: [28, 58, 89, 245], radius: 18,
+        strokeColor: [211, 169, 93, 255],
+        label: '主线任务　已领取 0/6　可领取 0', fontSize: 22, textColor: [255, 226, 159],
+    });
 
     const list = b.addNode(root, 'list', { y: 25, width: 700, height: 880 });
     for (let index = 0; index < 5; index++) {
         const row = b.addNode(list, `taskRow${index + 1}`, {
             y: 350 - index * 175, width: 680, height: 158,
-            panelColor: index % 2 === 0 ? [28, 52, 76, 250] : [24, 45, 68, 250], radius: 18,
+            panelColor: index % 2 === 0 ? [250, 242, 220, 248] : [242, 231, 204, 248],
+            radius: 18, strokeColor: [205, 165, 94, 255],
         });
-        b.addNode(row, 'title', { x: -205, y: 48, width: 310, height: 40, label: '任务标题', fontSize: 25, bold: true, textColor: [255, 225, 145], horizontalAlign: 0 });
-        b.addNode(row, 'description', { x: -205, y: 8, width: 310, height: 36, label: '完成任务目标', fontSize: 20, textColor: [212, 225, 241], horizontalAlign: 0 });
-        b.addNode(row, 'progress', { x: -205, y: -34, width: 310, height: 34, label: '进度 0/1', fontSize: 19, textColor: [123, 215, 255], horizontalAlign: 0 });
-        b.addNode(row, 'reward', { x: 80, y: -43, width: 245, height: 55, label: '奖励：金币×1000', fontSize: 18, textColor: [255, 210, 112] });
-        addButton(b, row, 'btn_claim', 265, 24, 130, 62, '进行中', [66, 104, 135, 255]);
+        b.addNode(row, 'title', { x: -145, y: 48, width: 310, height: 40, label: '任务标题', fontSize: 25, bold: true, textColor: [81, 53, 27], horizontalAlign: 0 });
+        b.addNode(row, 'description', { x: -145, y: 8, width: 310, height: 36, label: '完成任务目标', fontSize: 20, textColor: [73, 73, 63], horizontalAlign: 0 });
+        b.addNode(row, 'progress', { x: -145, y: -34, width: 310, height: 34, label: '进度 0/1', fontSize: 19, textColor: [30, 116, 123], horizontalAlign: 0 });
+        b.addNode(row, 'reward', { x: 80, y: -43, width: 245, height: 55, label: '奖励：金币×1000', fontSize: 18, textColor: [143, 88, 27] });
+        const claim = b.addNode(row, 'btn_claim', {
+            x: 265, y: 24, width: 130, height: 62,
+            panelColor: [174, 119, 51, 255], radius: 16, strokeColor: [237, 205, 132, 255],
+        });
+        b.addNode(claim, 'Label', { width: 112, height: 52, label: '进行中', fontSize: 21, bold: true, textColor: [255, 250, 227] });
     }
 
     const pagination = b.addNode(root, 'pagination', { y: -465, width: 500, height: 70 });
-    addButton(b, pagination, 'btn_previous', -170, 0, 125, 56, '上一页', [54, 82, 110, 255]);
-    b.addNode(pagination, 'page', { width: 140, height: 46, label: '1 / 1', fontSize: 21 });
-    addButton(b, pagination, 'btn_next', 170, 0, 125, 56, '下一页', [54, 82, 110, 255]);
+    addButton(b, pagination, 'btn_previous', -170, 0, 125, 56, '上一页', [87, 108, 122, 255]);
+    b.addNode(pagination, 'page', { width: 140, height: 46, label: '1 / 1', fontSize: 21, textColor: [255, 232, 185] });
+    addButton(b, pagination, 'btn_next', 170, 0, 125, 56, '下一页', [87, 108, 122, 255]);
 
     const footer = b.addNode(root, 'footer', { y: -565, width: 700, height: 90 });
-    addButton(b, footer, 'btn_claim_all', 0, 0, 260, 70, '一键领取', [151, 91, 43, 255]);
-    b.addNode(root, 'status', { y: -655, width: 650, height: 58, label: '', fontSize: 21, textColor: [255, 215, 119] });
+    addArtButton(b, footer, 'btn_claim_all', 0, 0, 260, 75, claimAllSprite, 260, 75, '一键领取', 25);
+    b.addNode(root, 'status', { y: -655, width: 650, height: 58, label: '', fontSize: 21, textColor: [255, 225, 154] });
     return b.data;
 }
 
@@ -632,9 +683,16 @@ function appendRoleGrowthPanel(roleData) {
     return roleData;
 }
 
-fs.writeFileSync('assets/team/prefab/team.prefab', `${JSON.stringify(buildTeamPrefab(), null, 2)}\n`);
-fs.writeFileSync('assets/team/prefab/summon.prefab', `${JSON.stringify(buildSummonPrefab(), null, 2)}\n`);
-fs.writeFileSync('assets/team/prefab/task.prefab', `${JSON.stringify(buildTaskPrefab(), null, 2)}\n`);
-const roleData = JSON.parse(fs.readFileSync('assets/role/prefab/role.prefab', 'utf8'));
-fs.writeFileSync('assets/role/prefab/role.prefab', `${JSON.stringify(appendRoleGrowthPanel(roleData), null, 2)}\n`);
-console.log('Generated team, summon, task and role growth prefab hierarchies.');
+const targets = process.argv.slice(2);
+const shouldWrite = (target) => targets.length === 0 || targets.includes(target);
+if (targets.some((target) => !['team', 'summon', 'task', 'role'].includes(target))) {
+    throw new Error(`Unknown prefab target: ${targets.join(', ')}`);
+}
+if (shouldWrite('team')) fs.writeFileSync('assets/team/prefab/team.prefab', `${JSON.stringify(buildTeamPrefab(), null, 2)}\n`);
+if (shouldWrite('summon')) fs.writeFileSync('assets/team/prefab/summon.prefab', `${JSON.stringify(buildSummonPrefab(), null, 2)}\n`);
+if (shouldWrite('task')) fs.writeFileSync('assets/team/prefab/task.prefab', `${JSON.stringify(buildTaskPrefab(), null, 2)}\n`);
+if (shouldWrite('role')) {
+    const roleData = JSON.parse(fs.readFileSync('assets/role/prefab/role.prefab', 'utf8'));
+    fs.writeFileSync('assets/role/prefab/role.prefab', `${JSON.stringify(appendRoleGrowthPanel(roleData), null, 2)}\n`);
+}
+console.log(`Generated ${targets.length ? targets.join(', ') : 'team, summon, task and role'} prefab hierarchies.`);

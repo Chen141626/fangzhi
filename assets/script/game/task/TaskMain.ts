@@ -1,4 +1,4 @@
-import { _decorator, BlockInputEvents, Component, director, Label, Node, warn } from 'cc';
+import { _decorator, BlockInputEvents, Component, director, Label, Node, Sprite, SpriteFrame, warn } from 'cc';
 import { oops } from 'db://oops-framework/core/Oops';
 import { UIID } from '../../config/UIConfig';
 import { GAME_EVENT_TASK_CHANGED } from '../../core/GameEvents';
@@ -38,6 +38,8 @@ export class TaskMain extends Component {
     private _pageLabel: Label | null = null;
     private _summaryLabel: Label | null = null;
     private _statusLabel: Label | null = null;
+    private _selectedTabFrame: SpriteFrame | null = null;
+    private _normalTabFrame: SpriteFrame | null = null;
 
     protected onLoad(): void {
         if (!this.getComponent(BlockInputEvents)) this.addComponent(BlockInputEvents);
@@ -58,6 +60,8 @@ export class TaskMain extends Component {
         findChild(this.node, 'tabs/btn_main')?.on(Node.EventType.TOUCH_END, () => this.changeCategory('main'), this);
         findChild(this.node, 'tabs/btn_daily')?.on(Node.EventType.TOUCH_END, () => this.changeCategory('daily'), this);
         findChild(this.node, 'tabs/btn_achievement')?.on(Node.EventType.TOUCH_END, () => this.changeCategory('achievement'), this);
+        this._selectedTabFrame = findChild(this.node, 'tabs/btn_main/art')?.getComponent(Sprite)?.spriteFrame ?? null;
+        this._normalTabFrame = findChild(this.node, 'tabs/btn_daily/art')?.getComponent(Sprite)?.spriteFrame ?? null;
         findChild(this.node, 'pagination/btn_previous')?.on(Node.EventType.TOUCH_END, () => this.changePage(-1), this);
         findChild(this.node, 'pagination/btn_next')?.on(Node.EventType.TOUCH_END, () => this.changePage(1), this);
         findChild(this.node, 'footer/btn_claim_all')?.on(Node.EventType.TOUCH_END, this.claimAll, this);
@@ -141,6 +145,10 @@ export class TaskMain extends Component {
         for (const [category, name] of pairs) {
             const label = findChild(this.node, `tabs/${name}/Label`)?.getComponent(Label);
             if (label) label.string = `${category === this._category ? '◆ ' : ''}${TASK_CATEGORY_NAMES[category]}`;
+            const art = findChild(this.node, `tabs/${name}/art`)?.getComponent(Sprite);
+            if (art && this._selectedTabFrame && this._normalTabFrame) {
+                art.spriteFrame = category === this._category ? this._selectedTabFrame : this._normalTabFrame;
+            }
         }
     }
 

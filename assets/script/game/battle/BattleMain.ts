@@ -120,6 +120,14 @@ const ITEM_NAMES: Readonly<Record<string, string>> = {
     'item.reward-chest': '珍稀宝箱',
 };
 
+const RESULT_REWARD_ICON_PATHS: Readonly<Record<string, string>> = {
+    'currency.gold': 'gui/common/home_popups/reward_gold_ingot_100x100/spriteFrame',
+    'currency.jade': 'gui/common/home_popups/reward_jade_100x100/spriteFrame',
+    'currency.crystal': 'gui/common/home_popups/reward_crystal_100x100/spriteFrame',
+    'consumable.qi-pill': 'gui/common/home_popups/reward_spirit_potion_100x100/spriteFrame',
+    'item.reward-chest': 'gui/common/home_popups/reward_chest_red_100x100/spriteFrame',
+};
+
 let battleSequence = 0;
 
 function nextBattleId(stageId: string): string {
@@ -153,8 +161,13 @@ export class BattleMain extends Component {
     private _stateLabel: Label | null = null;
     private _actionLabel: Label | null = null;
     private _resultLayer: Node | null = null;
-    private _resultLabel: Label | null = null;
-    private _restartButton: Node | null = null;
+    private _victoryState: Node | null = null;
+    private _defeatState: Node | null = null;
+    private readonly _resultRetryButtons: Node[] = [];
+    private readonly _resultBackButtons: Node[] = [];
+    private readonly _resultReplayButtons: Node[] = [];
+    private readonly _resultLogButtons: Node[] = [];
+    private _resultPowerUpButton: Node | null = null;
     private _nextStageButton: Node | null = null;
     private _stageSelectLayer: Node | null = null;
     private _stageSelectTitle: Label | null = null;
@@ -171,8 +184,6 @@ export class BattleMain extends Component {
     private _logLabel: Label | null = null;
     private _logPageLabel: Label | null = null;
     private _logPage = 0;
-    private _replayButton: RuntimeButton | null = null;
-    private _detailLogButton: RuntimeButton | null = null;
     private _replayActive = false;
     private readonly _replayFrames: BattleReplayFrame[] = [];
     private readonly _battleLogLines: string[] = [];
@@ -217,6 +228,7 @@ export class BattleMain extends Component {
         this._backButton = findChild(this.node, 'btn_back');
         this._backButton?.on(Node.EventType.TOUCH_END, this.onBack, this);
         this.buildRuntimeHierarchy();
+        this.bindResultHierarchy();
         this.bindUnitSlots();
     }
 
@@ -243,7 +255,11 @@ export class BattleMain extends Component {
     protected onDestroy(): void {
         this.stopAutoBattle();
         this._backButton?.off(Node.EventType.TOUCH_END, this.onBack, this);
-        this._restartButton?.off(Node.EventType.TOUCH_END, this.restartBattle, this);
+        this._resultRetryButtons.forEach((button) => button.off(Node.EventType.TOUCH_END, this.restartBattle, this));
+        this._resultBackButtons.forEach((button) => button.off(Node.EventType.TOUCH_END, this.onBack, this));
+        this._resultReplayButtons.forEach((button) => button.off(Node.EventType.TOUCH_END, this.onReplayBattle, this));
+        this._resultLogButtons.forEach((button) => button.off(Node.EventType.TOUCH_END, this.onShowBattleLog, this));
+        this._resultPowerUpButton?.off(Node.EventType.TOUCH_END, this.onPowerUp, this);
         this._nextStageButton?.off(Node.EventType.TOUCH_END, this.onNextStage, this);
         this._animationPreviewToggleButton?.off(
             Node.EventType.TOUCH_END, this.onAnimationPreviewToggle, this,
@@ -581,27 +597,9 @@ export class BattleMain extends Component {
         return result;
     }
 
-    private formatStatistics(): string {
-        const allies = Array.from(this._statistics.values())
-            .filter((item) => item.camp === 'ally')
-            .sort((a, b) => (b.damage + b.healing) - (a.damage + a.healing))
-            .slice(0, 3);
-        if (!allies.length) return '';
-        return ['战斗统计', ...allies.map((item) => (
-            `${item.name} 伤害${item.damage} 治疗${item.healing} 击杀${item.kills}`
-        ))].join('\n');
-    }
-
     private finishBattle(): void {
         // 保留死亡末帧；只终止流程，不在结算遮罩出现时重置角色动画。
         this.stopAutoBattle(false);
-        if (!this._resultLayer || !this._resultLabel) return;
-        this._resultLayer.active = true;
-        const result = this._flow.winner === 'ally'
-            ? '战斗胜利'
-            : this._flow.winner === 'enemy'
-                ? '战斗失败'
-                : '战斗平局';
         if (!this._settlement && this._session) {
             try {
                 this._settlement = this._rewardService.settle(
@@ -615,21 +613,89 @@ export class BattleMain extends Component {
                 warn(`[BattleMain] 奖励结算失败：${String(error)}`);
             }
         }
-        const stageName = this._session?.stage.name ?? '未知关卡';
-        const settlementText = this.formatSettlement(this._settlement);
-        this._resultLabel.string = [
-            result,
-            stageName,
-            `历经 ${this._totalRounds || this._flow.round} 回合`,
-            this.formatStatistics(),
-            settlementText,
-        ].filter(Boolean).join('\n');
+        this.refreshResultHierarchy();
+        if (this._resultLayer) this._resultLayer.active = true;
         const canContinue = this._flow.winner === 'ally' && !!this._session?.stage.nextStageId;
         if (this._nextStageButton) this._nextStageButton.active = canContinue;
-        if (this._replayButton) this._replayButton.node.active = this._replayFrames.length > 0;
-        if (this._detailLogButton) this._detailLogButton.node.active = this._battleLogLines.length > 0;
-        this._restartButton?.setPosition(canContinue ? -145 : 0, -245);
+        this._resultReplayButtons.forEach((button) => { button.active = this._replayFrames.length > 0; });
+        this._resultLogButtons.forEach((button) => { button.active = this._battleLogLines.length > 0; });
         if (this._stateLabel) this._stateLabel.string = '战斗结束';
+    }
+
+    private setResultText(state: Node, path: string, value: string): void {
+        const target = findChild(state, path)?.getComponent(Label);
+        if (target) target.string = value;
+    }
+
+    private refreshResultHierarchy(): void {
+        const victory = this._flow.winner === 'ally';
+        if (this._victoryState) this._victoryState.active = victory;
+        if (this._defeatState) this._defeatState.active = !victory;
+        const state = victory ? this._victoryState : this._defeatState;
+        if (!state) {
+            warn('[BattleMain] 缺少战斗结算节点，请重新导入 battle.prefab。');
+            return;
+        }
+        const rounds = this._totalRounds || this._flow.round;
+        const stage = this._session?.stage;
+        this.setResultText(state, 'stageName', stage?.name ?? '未知关卡');
+        this.setResultText(state, 'battleTime', `历经 ${rounds} 回合`);
+        if (victory) {
+            const bestRounds = stage ? this._rewardService.getProgress().stages[stage.id]?.bestRounds : undefined;
+            this.setResultText(state, 'bestRecord', bestRounds ? `最佳 ${bestRounds} 回合` : '暂无记录');
+            this.setResultText(state, 'rewardNote', this.formatSettlement(this._settlement));
+            const rewards = this._settlement?.rewards ?? [];
+            const token = this._runToken;
+            for (let index = 0; index < 4; index++) {
+                const slot = findChild(state, `rewardSlot${index + 1}`);
+                const reward = rewards[index];
+                if (!slot) continue;
+                slot.active = !!reward;
+                if (!reward) continue;
+                const itemId = String(reward.itemId);
+                this.setResultText(slot, 'amount', `${ITEM_NAMES[itemId] ?? itemId} ×${reward.amount}`);
+                const icon = findChild(slot, 'icon')?.getComponent(Sprite);
+                const path = RESULT_REWARD_ICON_PATHS[itemId];
+                if (!icon) continue;
+                icon.spriteFrame = null;
+                if (!path) continue;
+                loadSpriteFrameCompat(path, (error, frame) => {
+                    if (this.isCurrentRun(token) && icon.isValid) {
+                        icon.spriteFrame = error ? null : frame;
+                    }
+                });
+            }
+        }
+        else {
+            this.setResultText(state, 'title', this._flow.winner === 'draw' ? '战斗平局' : '战斗失败');
+        }
+        const allies = this._session?.allies ?? [];
+        const token = this._runToken;
+        for (let index = 0; index < 5; index++) {
+            const row = findChild(state, `allyRow${index + 1}`);
+            const ally = allies[index];
+            if (!row) continue;
+            row.active = !!ally;
+            if (!ally) continue;
+            const stat = this._statistics.get(`ally:${ally.configId}`);
+            this.setResultText(row, 'name', ally.name);
+            if (victory) {
+                this.setResultText(row, 'stats', `伤害 ${stat?.damage ?? 0} · 治疗 ${stat?.healing ?? 0}`);
+            }
+            else {
+                const unit = this._flow.units.find((item) => item.camp === 'ally' && item.configId === ally.configId);
+                this.setResultText(row, 'hp', `${unit?.currentHp ?? 0}/${unit?.attributes.maxHp ?? ally.attributes.maxHp}`);
+                this.setResultText(row, 'stats', `伤害 ${stat?.damage ?? 0}\n治疗 ${stat?.healing ?? 0}`);
+            }
+            const portrait = findChild(row, 'portrait')?.getComponent(Sprite);
+            if (!portrait) continue;
+            portrait.spriteFrame = null;
+            loadSpriteFrameCompat(ally.iconPath, (error, frame) => {
+                if (this.isCurrentRun(token) && portrait.isValid) {
+                    portrait.spriteFrame = error ? null : frame;
+                }
+            });
+        }
     }
 
     private formatSettlement(settlement: BattleSettlement | null): string {
@@ -637,10 +703,7 @@ export class BattleMain extends Component {
         if (!settlement) return '奖励发放失败，请重试';
         if (settlement.duplicate) return '奖励已结算';
         if (!settlement.rewards.length) return '本次战斗无奖励';
-        const rewardText = settlement.rewards
-            .map((item) => `${ITEM_NAMES[String(item.itemId)] ?? String(item.itemId)}×${item.amount}`)
-            .join('  ');
-        return `${settlement.firstClear ? '首通奖励 · ' : ''}${rewardText}`;
+        return settlement.firstClear ? '首通奖励已发放' : '奖励已发放';
     }
 
     private bindUnitSlots(): void {
@@ -885,54 +948,6 @@ export class BattleMain extends Component {
         runtime.addChild(actionPanel);
         this._actionLabel = this.createLabel(actionPanel, 'actionText', 0, 0, 620, 122, 22, Color.WHITE);
 
-        this._resultLayer = new Node('resultLayer');
-        this._resultLayer.layer = this.node.layer;
-        this._resultLayer.addComponent(UITransform).setContentSize(750, 1600);
-        this._resultLayer.addComponent(BlockInputEvents);
-        const shade = this._resultLayer.addComponent(Graphics);
-        shade.fillColor = new Color(0, 0, 0, 150);
-        shade.rect(-375, -800, 750, 1600);
-        shade.fill();
-        runtime.addChild(this._resultLayer);
-
-        const card = new Node('resultCard');
-        card.layer = this.node.layer;
-        card.addComponent(UITransform).setContentSize(620, 600);
-        const cardGraphics = card.addComponent(Graphics);
-        cardGraphics.fillColor = new Color(25, 40, 68, 245);
-        cardGraphics.roundRect(-310, -300, 620, 600, 34);
-        cardGraphics.fill();
-        this._resultLayer.addChild(card);
-        this._resultLabel = this.createLabel(card, 'resultText', 0, 90, 560, 330, 30, new Color(255, 226, 129));
-
-        this._restartButton = new Node('btn_restart');
-        this._restartButton.layer = this.node.layer;
-        this._restartButton.setPosition(0, -245);
-        this._restartButton.addComponent(UITransform).setContentSize(260, 78);
-        const buttonGraphics = this._restartButton.addComponent(Graphics);
-        buttonGraphics.fillColor = new Color(46, 137, 204, 255);
-        buttonGraphics.roundRect(-130, -39, 260, 78, 24);
-        buttonGraphics.fill();
-        card.addChild(this._restartButton);
-        this.createLabel(this._restartButton, 'Label', 0, 0, 220, 60, 30, Color.WHITE).string = '再次挑战';
-        this._restartButton.on(Node.EventType.TOUCH_END, this.restartBattle, this);
-
-        const nextStageButton = this.createRuntimeButton(
-            card, 'btn_next_stage', 145, -245, 220, 78, '下一关', new Color(58, 151, 91, 255),
-        );
-        this._nextStageButton = nextStageButton.node;
-        this._nextStageButton.on(Node.EventType.TOUCH_END, this.onNextStage, this);
-        this._nextStageButton.active = false;
-        this._replayButton = this.createRuntimeButton(
-            card, 'btn_battle_replay', -145, -150, 240, 72, '战斗回放', new Color(92, 78, 151, 255),
-        );
-        this._replayButton.node.on(Node.EventType.TOUCH_END, this.onReplayBattle, this);
-        this._detailLogButton = this.createRuntimeButton(
-            card, 'btn_battle_log', 145, -150, 240, 72, '详细日志', new Color(66, 118, 126, 255),
-        );
-        this._detailLogButton.node.on(Node.EventType.TOUCH_END, this.onShowBattleLog, this);
-        this._resultLayer.active = false;
-
         this._stageSelectLayer = new Node('stageSelectLayer');
         this._stageSelectLayer.layer = this.node.layer;
         this._stageSelectLayer.addComponent(UITransform).setContentSize(750, 1600);
@@ -973,8 +988,53 @@ export class BattleMain extends Component {
         this.buildBattleLogLayer(runtime);
         this.buildTutorialLayer(runtime);
 
+        // 结算视觉节点存放在 battle.prefab，可在编辑器里直接查看层级与切图。
+        this._resultLayer = findChild(this.node, 'resultLayer');
+        if (this._resultLayer) {
+            this._resultLayer.addComponent(BlockInputEvents);
+            runtime.addChild(this._resultLayer);
+            this._resultLayer.active = false;
+        }
+
         // 返回按钮始终高于结算遮罩，保证战斗结束后仍可退出页面。
         this._backButton?.setSiblingIndex(this.node.children.length - 1);
+    }
+
+    private bindResultHierarchy(): void {
+        if (!this._resultLayer) {
+            warn('[BattleMain] battle.prefab 缺少结算层 resultLayer。');
+            return;
+        }
+        this._victoryState = findChild(this._resultLayer, 'victoryState');
+        this._defeatState = findChild(this._resultLayer, 'defeatState');
+        for (const state of [this._victoryState, this._defeatState]) {
+            if (!state) continue;
+            const retry = findChild(state, 'btn_restart');
+            if (retry) {
+                retry.on(Node.EventType.TOUCH_END, this.restartBattle, this);
+                this._resultRetryButtons.push(retry);
+            }
+            const back = findChild(state, 'btn_back');
+            if (back) {
+                back.on(Node.EventType.TOUCH_END, this.onBack, this);
+                this._resultBackButtons.push(back);
+            }
+            const replay = findChild(state, 'btn_battle_replay');
+            if (replay) {
+                replay.on(Node.EventType.TOUCH_END, this.onReplayBattle, this);
+                this._resultReplayButtons.push(replay);
+            }
+            const log = findChild(state, 'btn_battle_log');
+            if (log) {
+                log.on(Node.EventType.TOUCH_END, this.onShowBattleLog, this);
+                this._resultLogButtons.push(log);
+            }
+        }
+        this._nextStageButton = this._victoryState && findChild(this._victoryState, 'btn_next_stage');
+        this._nextStageButton?.on(Node.EventType.TOUCH_END, this.onNextStage, this);
+        if (this._nextStageButton) this._nextStageButton.active = false;
+        this._resultPowerUpButton = this._defeatState && findChild(this._defeatState, 'btn_power_up');
+        this._resultPowerUpButton?.on(Node.EventType.TOUCH_END, this.onPowerUp, this);
     }
 
     private buildBattleLogLayer(runtime: Node): void {
@@ -1620,5 +1680,14 @@ export class BattleMain extends Component {
 
     private onBack(): void {
         oops.gui.remove(UIID.Battle, false);
+    }
+
+    private onPowerUp(): void {
+        oops.gui.remove(UIID.Battle, false);
+        if (!oops.gui.has(UIID.Team)) {
+            oops.gui.open(UIID.Team, null, {
+                onLoadFailure: () => warn('[BattleMain] 编队界面加载失败，请检查 team bundle。'),
+            });
+        }
     }
 }
